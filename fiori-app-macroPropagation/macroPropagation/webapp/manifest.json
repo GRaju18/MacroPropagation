@@ -1,0 +1,111 @@
+{
+	"_version": "1.12.0",
+	"sap.app": {
+		"id": "com.9b.MacroPropagation",
+		"type": "application",
+		"i18n": "i18n/i18n.properties",
+		"applicationVersion": {
+			"version": "1.0.0"
+		},
+		"title": "{{appTitle}}",
+		"description": "{{appDescription}}",
+		"sourceTemplate": {
+			"id": "servicecatalog.connectivityComponentForManifest",
+			"version": "0.0.0"
+		},
+		"dataSources": {
+          
+		}
+	},
+	"sap.ui": {
+		"fullWidth": true,
+		"technology": "UI5",
+		"icons": {
+			"icon": "",
+			"favIcon": "",
+			"phone": "",
+			"phone@2": "",
+			"tablet": "",
+			"tablet@2": ""
+		},
+		"deviceTypes": {
+			"desktop": true,
+			"tablet": true,
+			"phone": true
+		}
+	},
+	"sap.ui5": {
+		"flexEnabled": false,
+		"rootView": {
+			"viewName": "com.9b.MacroPropagation.view.App",
+			"type": "XML",
+			"async": true,
+			"id": ""
+		},
+		"dependencies": {
+			"minUI5Version": "1.65.6",
+			"libs": {
+				"sap.m": {},
+				"sap.ui.core": {},
+				"sap.ui.layout": {}
+			}
+		},
+		"contentDensities": {
+			"compact": true,
+			"cozy": true
+		},
+		"models": {
+			"i18n": {
+				"type": "sap.ui.model.resource.ResourceModel",
+				"settings": {
+					"bundleName": "com.9b.MacroPropagation.i18n.i18n"
+				}
+			}
+		},
+		"resources": {
+			"css": [{
+				"uri": "css/style.css"
+			}],
+			"js": [{
+				"uri": "control/jsbarcode.js"
+			}, {
+				"uri": "jsLibrary/JsBarcode.all.js"
+			}, {
+				"uri": "jsLibrary/JsBarcode.all.min.js"
+			}]
+		},
+		"routing": {
+			"config": {
+				"routerClass": "sap.f.routing.Router",
+				"viewType": "XML",
+				"async": true,
+				"viewPath": "com.9b.MacroPropagation.view",
+				"controlAggregation": "pages",
+				"controlId": "app",
+				"clearControlAggregation": false,
+				"bypassed": {
+					"target": []
+				}
+			},
+			"routes": [{
+					"name": "MacroPropagation",
+					"pattern": "",
+					"titleTarget": "",
+					"greedy": false,
+					"target": ["MacroPropagation"]
+				}
+
+			],
+			"targets": {
+				"MacroPropagation": {
+					"viewType": "XML",
+					"transition": "slide",
+					"clearControlAggregation": true,
+					"viewName": "MacroPropagation",
+					"controlAggregation": "pages"
+					
+				}
+			}
+		}
+	}
+}

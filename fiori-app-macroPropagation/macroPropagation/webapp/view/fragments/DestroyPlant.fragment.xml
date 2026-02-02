@@ -1,0 +1,36 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:l="sap.ui.layout">
+	<Dialog contentWidth="23rem" class="sapUiSizeCompact iconDialog waterDialog" stretch="{device>/system/phone}" draggable="true">
+		<customHeader>
+			<Bar>
+				<contentMiddle><Label text="Destroy Plants"/></contentMiddle>
+			</Bar>
+		</customHeader>
+		<content>
+			<FlexBox direction="Column">
+				<InputListItem label="Waste Weight">
+					<Input id="wasteWt" width="12rem" value="{jsonModel>U_NWTWT}" required="true" liveChange="onWtChange"/>
+				</InputListItem>
+				<InputListItem label="Waste UOM">
+					<Select width="12rem" id="uom" selectedKey="{jsonModel>U_NWTUM}" forceSelection="false" items="{path: 'jsonModel>/uomVals'}">
+						<core:Item key="{jsonModel>key}" text="{jsonModel>text}"/>
+					</Select>
+				</InputListItem>
+				<InputListItem label="Reason">
+					<Select id="reason" width="12rem" selectedKey="{jsonModel>U_NWTRS}" items="{path: 'jsonModel>/WasteReasonsList'}" forceSelection="false">
+						<core:Item key="{jsonModel>Name}" text="{jsonModel>Name}"/>
+					</Select>
+				</InputListItem>
+				<InputListItem label="Notes">
+					<Input id="notes" width="12rem" value="{jsonModel>U_NNOTE}" required="true"/>
+				</InputListItem>
+				<InputListItem label="Destroy Date">
+					<DatePicker id="wRecDate" width="12rem" displayFormat="yyyy-MM-dd" required="true"/>
+				</InputListItem>
+			</FlexBox>
+		</content>
+		<beginButton><Button type="Emphasized" text="Destroy Plants" press="onDestroyPlant" tooltip="Destroy Plants"/></beginButton>
+		<endButton>
+			<Button type="Transparent" text="Cancel" press="onDestroyClose" tooltip="Cancel"></Button>
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>

@@ -1,0 +1,27 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:l="sap.ui.layout" xmlns:f="sap.ui.layout.form">
+	<Popover class="sapUiContentPadding" placement="Auto" initialFocus="action" contentWidth="300px" contentHeight="200px">
+		<customHeader>
+			<Bar>
+				<contentMiddle>
+					<Label text="Source Details" design="Bold"/>
+				</contentMiddle>
+			</Bar>
+		</customHeader>
+		<content>
+			<f:SimpleForm id="SimpleFormChange471" editable="true" layout="ResponsiveGridLayout" title="" labelSpanXL="4" labelSpanL="4" labelSpanM="4"
+				labelSpanS="12" adjustLabelSpan="false" emptySpanXL="1" emptySpanL="1" emptySpanM="1" emptySpanS="0" columnsXL="1" columnsL="1" columnsM="1"
+				singleContainerFullSize="false">
+				<f:content>
+					<Label text=""/>
+					<Text text="{sourceIDs}" id="sourceID"/>
+				</f:content>
+			</f:SimpleForm>
+		</content>
+		<footer>
+			<OverflowToolbar>
+				<ToolbarSpacer/>
+				<Button id="close" text="Close" press="handleClose"/>
+			</OverflowToolbar>
+		</footer>
+	</Popover>
+</core:FragmentDefinition>

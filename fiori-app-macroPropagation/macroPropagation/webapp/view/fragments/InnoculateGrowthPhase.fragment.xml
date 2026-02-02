@@ -1,0 +1,46 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:l="sap.ui.layout">
+	<Dialog id="cloneChangeGrowthPhase" draggable="true" contentWidth="28rem" class="sapUiSizeCompact iconDialog waterDialog"
+		stretch="{device>/system/phone}">
+		<customHeader>
+			<Bar>
+				<contentMiddle>
+					<Label text="{i18n>ChangeGrowthPhase}"/>
+				</contentMiddle>
+			</Bar>
+		</customHeader>
+		<content>
+			<FlexBox direction="Column">
+				<InputListItem label="No. of plants">
+					<Input id="avalQty" editable="false" width="15rem"/>
+				</InputListItem>
+				<InputListItem label="Growth Phase">
+					<Select id="growthPhase" width="15rem" forceSelection="true" editable="false">
+						<core:Item key="StemVM" text="Stem VM"/>
+					</Select>
+				</InputListItem>
+				<InputListItem label="Item">
+					<Select id="Item" width="15rem" items="{path: 'jsonModel>/InnoculateItemsList'}" forceSelection="false" editable="false">
+						<items>
+							<core:Item key="{jsonModel>ItemCode}" text="{jsonModel>ItemName}"/>
+						</items>
+					</Select>
+				</InputListItem>
+				<InputListItem label="Location">
+					<Select id="location" width="15rem" items="{path: 'jsonModel>/StemVMLocationList', sorter : { path : 'key', descending : false }}"
+						forceSelection="true" editable="false">
+						<core:Item key="{jsonModel>key}" text="{jsonModel>key} - {jsonModel>text}"/>
+					</Select>
+				</InputListItem>
+				<InputListItem label="{i18n>Date}">
+					<DatePicker id="mDate" displayFormat="yyyy-MM-dd" width="15rem"/>
+				</InputListItem>
+			</FlexBox>
+		</content>
+		<beginButton>
+			<Button type="Emphasized" text="{i18n>Ok}" press="InnoculateGrowthPhase"></Button>
+		</beginButton>
+		<endButton>
+			<Button type="Transparent" text="{i18n>Cancel}" press="InnoculateClose"></Button>
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>

@@ -1,0 +1,40 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:l="sap.ui.layout">
+	<Dialog id="changeGrowthPhase" draggable="true" contentWidth="28rem" class="sapUiSizeCompact iconDialog waterDialog"
+		stretch="{device>/system/phone}">
+		<customHeader>
+			<Bar>
+				<contentMiddle>
+					<Label text="Move Cuttings"/>
+				</contentMiddle>
+			</Bar>
+		</customHeader>
+		<content>
+			<FlexBox direction="Column">
+				<InputListItem label="Select Phase">
+					<Select id="growthPhase" width="17rem" forceSelection="false">
+						<core:Item key="Multiplication" text="Multiplication"/>
+						<core:Item key="Preservation" text="Preservation"/>
+						<!--<core:Item key="MacroPropagation" text="Macro Propagation"/>-->
+					</Select>
+				</InputListItem>
+				<InputListItem label="Location">
+					<Select id="location" width="17rem" items="{path: 'jsonModel>/CuttingsLocatonList' ,sorter : { path : 'key', descending : false }}"
+						forceSelection="true" editable="false">
+						<items>
+							<core:Item key="{jsonModel>key}" text="{jsonModel>key} - {jsonModel>text}"/>
+						</items>
+					</Select>
+				</InputListItem>
+				<InputListItem label="{i18n>Date}">
+					<DatePicker id="mDate" displayFormat="yyyy-MM-dd" width="17rem"/>
+				</InputListItem>
+			</FlexBox>
+		</content>
+		<beginButton>
+			<Button type="Emphasized" text="{i18n>Ok}" press="onMoveCuttings"></Button>
+		</beginButton>
+		<endButton>
+			<Button type="Transparent" text="{i18n>Cancel}" press="onMoveCuttingsClose"></Button>
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>

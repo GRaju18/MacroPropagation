@@ -1,0 +1,46 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:l="sap.ui.layout">
+	<Dialog id="createClone" contentWidth="23rem" class="sapUiSizeCompact iconDialog waterDialog" stretch="{device>/system/phone}"
+		draggable="true">
+		<customHeader>
+			<Bar>
+				<contentMiddle>
+					<Label text="Record Residue"/>
+				</contentMiddle>
+			</Bar>
+		</customHeader>
+		<content>
+			<FlexBox direction="Column">
+				<InputListItem label="Batch ID">
+					<Select id="batchID" width="12rem" items="{path: 'jsonModel>/UniqueBatchIDList'}" forceSelection="false">
+						<core:Item key="{jsonModel>IntrSerial}" text="{jsonModel>IntrSerial}"/>
+					</Select>
+				</InputListItem>
+				<InputListItem label="{i18n>WasteWeight}">
+					<Input id="wasteWt" width="12rem" required="true" liveChange="onChangeReportWaste"/>
+				</InputListItem>
+				<InputListItem label="{i18n>WasteUOM}">
+					<Select width="12rem" id="uom" forceSelection="false" items="{path: 'jsonModel>/uomVals'}">
+						<core:Item key="{jsonModel>key}" text="{jsonModel>text}"/>
+					</Select>
+				</InputListItem>
+				<InputListItem label="{i18n>Reason}">
+					<Select id="reason" width="12rem" items="{path: 'jsonModel>/WasteReasonsList'}" forceSelection="false">
+						<core:Item key="{jsonModel>Name}" text="{jsonModel>Name}"/>
+					</Select>
+				</InputListItem>
+				<InputListItem label="{i18n>Notes}">
+					<Input id="notes" width="12rem" required="true"/>
+				</InputListItem>
+				<InputListItem label="{i18n>WasteRecordDate}">
+					<DatePicker id="wRecDate" width="12rem" displayFormat="yyyy-MM-dd" required="true"/>
+				</InputListItem>
+			</FlexBox>
+		</content>
+		<beginButton>
+			<Button type="Emphasized" text="Record Residue" press="onRecordResidue"/>
+		</beginButton>
+		<endButton>
+			<Button type="Transparent" text="{i18n>Cancel}" press="closeRecordWaste"/>
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>
