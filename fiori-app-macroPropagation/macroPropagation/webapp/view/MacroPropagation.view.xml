@@ -11,11 +11,10 @@
 						<Select id="navigate" width="14rem" change="onChanageNavigate" forceSelection="false">
 							<core:Item key="Strain" text="{i18n>Strain}"/>
 							<core:Item key="PhenoTrack" text="Pheno Track"/>
-							<core:Item key="ClonePlanner" text="Clone Planner"/>
-							<core:Item key="VegPlanner" text="{i18n>VegPlanner}"/>
-							<core:Item key="FlowerPlanner" text="{i18n>FlowerPlanner}"/>
-							<core:Item key="ManagePackages" text="{i18n>ManagePackages}"/>
+							<core:Item key="MicroPropagation" text="Micro Propagation"/>
+							<!--<core:Item key="MacroPropagation" text="Macro Propagation"/>-->
 							<core:Item key="MotherPlanner" text="{i18n>MotherPlanner}"/>
+							<core:Item key="Cultivation" text="Cultivation"/>
 							<core:Item key="DestroyedPlants" text="{i18n>DestroyedPlants}"/>
 							<core:Item key="Waste" text="{i18n>RecordWaste}"/>
 						</Select>

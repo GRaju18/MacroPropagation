@@ -480,32 +480,20 @@ sap.ui.define([
 			if (pageTo === "MicroPropagation") {
 				AppNavigator = serLayerTargetUrl.MicroPropagation;
 			}
-			if (pageTo === "ClonePlanner") {
-				AppNavigator = serLayerTargetUrl.ClonePlanner;
-			}
-			if (pageTo === "VegPlanner") {
-				AppNavigator = serLayerTargetUrl.VegPlanner;
-			}
-			if (pageTo === "FlowerPlanner") {
-				AppNavigator = serLayerTargetUrl.FlowerPlanner;
-			}
-			if (pageTo === "Harvest") {
-				AppNavigator = serLayerTargetUrl.Harvest;
+			if (pageTo === "MacroPropagation") {
+				AppNavigator = serLayerTargetUrl.MacroPropagation;
 			}
 			if (pageTo === "MotherPlanner") {
 				AppNavigator = serLayerTargetUrl.MotherPlanner;
+			}
+			if (pageTo === "Cultivation") {
+				AppNavigator = serLayerTargetUrl.Cultivation;
 			}
 			if (pageTo === "DestroyedPlants") {
 				AppNavigator = serLayerTargetUrl.DestroyedPlants;
 			}
 			if (pageTo === "Waste") {
 				AppNavigator = serLayerTargetUrl.Waste;
-			}
-			if (pageTo === "ManagePackages") {
-				AppNavigator = serLayerTargetUrl.ManagePackages;
-			}
-			if (pageTo === "METRCTag") {
-				AppNavigator = serLayerTargetUrl.METRCTag;
 			}
 			var oCrossAppNavigator = sap.ushell.Container.getService("CrossApplicationNavigation"); // get a handle on the global XAppNav service
 			oCrossAppNavigator.toExternal({

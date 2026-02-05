@@ -45,7 +45,7 @@ sap.ui.define([
 
 			//set the odata service call model
 			var jsonModel = new JSONModel({
-				versionInfo: "v1.125.02",
+				versionInfo: "v1.125.03",
 				strainList: [],
 				createMode: false,
 				serLayerbaseUrl: "https://login.seedandbeyond.com:50000",
@@ -60,10 +60,8 @@ sap.ui.define([
 					Strain: "webclient-ext-strainlist-app-content-sapb1strainlist",
 					PhenoTrack: "webclient-ext-PhenoTrack-app-v2-content-sapb1PhenoTrack",
 					MicroPropagation: "webclient-ext-MicroPropagation-app-v2-content-sapb1MicroPropagation",
-					ClonePlanner: "webclient-ext-clone-planner-app-v2-content-sapb1cloneplanner",
-					VegPlanner: "webclient-ext-veg-planner2-app-content-sapb1vegplanner2",
-					FlowerPlanner: "webclient-ext-flowering-app-v2-content-sapb1flowering",
-					ManagePackages: "webclient-ext-manage-packages-app-content-sapb1manage-packages",
+					MacroPropagation: "webclient-ext-MacroPropagation-app-v2-content-sapb1MacroPropagation",
+					Cultivation: "webclient-ext-Cultivation-app-v2-content-sapb1Cultivation",
 					MotherPlanner: "webclient-ext-motherplanner2-app-content-sapb1motherplanner",
 					DestroyedPlants: "webclient-ext-destroy-plant-app-content-sapb1destroy-plant",
 					Waste: "webclient-ext-waste-record-app-content-sapb1waste-record",
