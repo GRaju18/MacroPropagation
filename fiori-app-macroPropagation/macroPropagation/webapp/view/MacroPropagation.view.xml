@@ -39,13 +39,13 @@
 				stretchContentHeight="true">
 				<items>
 					<IconTabFilter text="Reception" key="RECEPTION"/>
-					<IconTabFilter text="Preservation" key="PRESERVATION"/>
+					<IconTabFilter text="Clone Cultivation" key="CLONECULTIVATION"/>
 				</items>
 				<content>
 					<VBox height="100%">
 						<VBox height="100%" class="fullHeight" width="100%">
-							<table:Table class="uiTableTable" id="microPropagationTable" selectionMode="MultiToggle"
-								rows="{path:'jsonModel>/microPropagationTableData'}" visibleRowCountMode="Auto" rowSelectionChange="handleRowSelection"
+							<table:Table class="uiTableTable" id="macroPropagationTable" selectionMode="MultiToggle"
+								rows="{path:'jsonModel>/macroPropagationTableData'}" visibleRowCountMode="Auto" rowSelectionChange="handleRowSelection"
 								filter="customFilter" cellClick="cellClick">
 								<table:extension>
 									<OverflowToolbar visible="{= ${jsonModel>/sIconTab} === 'RECEPTION'}">
@@ -55,19 +55,19 @@
 											liveChange="onChangeMultiInput" id="searchFieldTable" enableMultiLineMode="true"/>
 										<Button text="{i18n>ClearAllFilters}" press="clearAllFilters"/>
 										<Text class="sapMTBSeparator"/>
-										<Button text="Move Cuttings" press="moveCuttings" type="Default"/>
-										<Button text="Mark As Clones" press="markAsClones" type="Default"/>
-										<Button text="{i18n>DestroyPlants}" press="performDestroyPlants" type="Reject"></Button>
+										<Button text="Move Clones" press="moveClones" type="Default"/>
+										<Button text="Destroy Plants" press="performDestroyPlants" type="Reject"></Button>
 										<Button text="Record Residue" press="performRecordResidue" type="Default"></Button>
 									</OverflowToolbar>
-									<OverflowToolbar visible="{= ${jsonModel>/sIconTab} === 'PRESERVATION'}">
+									<OverflowToolbar visible="{= ${jsonModel>/sIconTab} === 'CLONECULTIVATION'}">
 										<Text class="tableTitle" id="tableHeader2" text="Plants"/>
 										<ToolbarSpacer/>
 										<MultiInput width="25rem" placeholder="Search" tokenUpdate="tokenUpdateMultiInput" submit="onSubmitMultiInput" showValueHelp="false"
 											liveChange="onChangeMultiInput" id="searchFieldTable5" enableMultiLineMode="true"/>
 										<Button text="{i18n>ClearAllFilters}" press="clearAllFilters"/>
 										<Text class="sapMTBSeparator"/>
-										<Button text="Send For Multiplication" press="sendToMultiplication" type="Default"/>
+										<Button text="Sell Clones" press="sendToMultiplication" type="Default"/>
+										<Button text="Send To Reception" press="sendToMultiplication" type="Default"/>
 										<Button text="Destroy Plants" press="performDestroyPlants" type="Reject"/>
 										<Button text="Record Residue" press="performRecordResidue" type="Default"></Button>
 									</OverflowToolbar>

@@ -4,7 +4,7 @@
 		<customHeader>
 			<Bar>
 				<contentMiddle>
-					<Label text="Mark As Clone"/>
+					<Label text="Move Clones"/>
 				</contentMiddle>
 			</Bar>
 		</customHeader>
@@ -14,25 +14,28 @@
 					<InputListItem label="No. of plants">
 						<Input id="avalQty" editable="false" width="17rem"/>
 					</InputListItem>
-					<InputListItem label="Item">
-						<Select id="Item" width="17rem" items="{path: 'jsonModel>/CloneItemsList'}" forceSelection="false" editable="false">
-							<items>
-								<core:Item key="{jsonModel>ItemCode}" text="{jsonModel>ItemName}"/>
-							</items>
-						</Select>
-					</InputListItem>
 					<InputListItem label="Phase">
-						<Select id="phase" width="17rem" forceSelection="true" editable="false">
+						<Select id="phase" width="17rem" forceSelection="false" change="onChangePhase">
 							<items>
-								<core:Item key="Macro" text="Macro Propagation"/>
+								<core:Item key="Mother" text="Mother"/>
+								<core:Item key="Cultivation" text="Cultivation"/>
+								<core:Item key="Macro_Clone" text="Clone Cultivation"/>
 							</items>
 						</Select>
 					</InputListItem>
 					<InputListItem label="Location">
-						<Select id="location" width="17rem" items="{path: 'jsonModel>/createCloneLocationList', sorter : { path : 'key', descending : false }}"
-							forceSelection="true" editable="false">
+						<Select id="location" width="17rem" items="{path: 'jsonModel>/LocationList', sorter : { path : 'key', descending : false }}"
+							forceSelection="false">
 							<core:Item key="{jsonModel>key}" text="{jsonModel>key} - {jsonModel>text}"/>
 						</Select>
+						<!--<Select id="location" width="17rem" forceSelection="false">-->
+						<!--	<items>-->
+						<!--		<core:Item key="CLF005" text="CLF005 - Macropropagation Room"/>-->
+						<!--		<core:Item key="CLF009" text="CLF009 - Mother Plant Room"/>-->
+						<!--		<core:Item key="CLF013" text="CLF013 - Cultivation Room"/>-->
+						<!--		<core:Item key="CLF016" text="CLF016 - Cultivation Room"/>-->
+						<!--	</items>-->
+						<!--</Select>-->
 					</InputListItem>
 					<InputListItem label="{i18n>Date}">
 						<DatePicker id="mDate" displayFormat="yyyy-MM-dd" width="17rem"/>
@@ -41,7 +44,7 @@
 			</FlexBox>
 		</content>
 		<beginButton>
-			<Button type="Emphasized" text="{i18n>Create}" press="onCloneCreate"/>
+			<Button type="Emphasized" text="{i18n>Create}" press="onMoveClones"/>
 		</beginButton>
 		<endButton>
 			<Button type="Transparent" text="{i18n>Close}" press="onCloneClose" tooltip="Close"/>
