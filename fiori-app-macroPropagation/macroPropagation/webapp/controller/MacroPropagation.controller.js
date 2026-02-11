@@ -399,10 +399,51 @@ sap.ui.define([
 				that.byId("macroPropagationTable").setSelectedIndex(-1);
 			}, this.createCloneDialog);
 		},
-		/***method end for Reception**/
 
-		/***method start for Preservation***/
-		sendToMultiplication: function () {
+		/***method start for sell clones***/
+		sellClones: function () {
+			var that = this;
+			var sItems;
+			var jsonModel = that.getOwnerComponent().getModel("jsonModel");
+			var macroPropagationTable = this.getView().byId("macroPropagationTable");
+			sItems = macroPropagationTable.getSelectedIndices();
+			if (sItems.length > 0) {
+				sap.m.MessageBox.confirm("Are you sure you want to sell these plants ?", {
+					onClose: function (action) {
+						if (action === "OK") {
+							var sObj, batchUrl = [];
+							$.each(sItems, function (i, e) {
+								sObj = macroPropagationTable.getContextByIndex(e).getObject();
+								var payLoadInventoryEntry = {
+									U_Phase: "Sell"
+								};
+								batchUrl.push({
+									url: "/b1s/v2/BatchNumberDetails(" + sObj.AbsEntry + ")",
+									data: payLoadInventoryEntry,
+									method: "PATCH"
+								});
+							});
+							jsonModel.setProperty("/errorTxt", []);
+							that.createBatchCall(batchUrl, function () {
+								var errorTxt = jsonModel.getProperty("/errorTxt");
+								if (errorTxt.length > 0) {
+									sap.m.MessageBox.error(errorTxt.join("\n"));
+								} else {
+									sap.m.MessageToast.show("Selected plants are sold");
+								}
+								that.loadMasterData();
+								macroPropagationTable.setSelectedIndex(-1);
+							});
+						}
+					}
+				});
+			} else {
+				sap.m.MessageToast.show("Please select atleast one plant");
+			}
+		},
+
+		//method for send to receiption
+		sendToReception: function () {
 			var that = this;
 			that.loadAllData();
 			var jsonModel = that.getOwnerComponent().getModel("jsonModel");
