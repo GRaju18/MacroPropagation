@@ -765,11 +765,12 @@ sap.ui.define([
 		},
 		onLoadWasteReasonMethod: function () {
 			var jsonModel = this.getOwnerComponent().getModel("jsonModel");
-			this.readServiecLayer("/b1s/v2/U_NWMET", function (e) {
-				jsonModel.setProperty("/WasteMethodsList", e.value);
-			});
 			this.readServiecLayer("/b1s/v2/U_NWREA", function (e) {
 				jsonModel.setProperty("/WasteReasonsList", e.value);
+			});
+			var rSelect = "?$select=U_NWTLB";
+			this.readServiecLayer("/b1s/v2/NWTHS" + rSelect, function (data) {
+				jsonModel.setProperty("/allLableData", data.value);
 			});
 		},
 		onDestroyClose: function () {
@@ -813,6 +814,14 @@ sap.ui.define([
 				payLoadInventory,
 				batchUrl = [],
 				payLoadUpdate, payLoadDestroyCreate;
+			var d = new Date();
+			var day = d.getDate().toString().padStart(2, "0");
+			var month = (d.getMonth() + 1).toString().padStart(2, "0");
+			var year = d.getFullYear();
+			var uniqueText = year + "" + month + "" + day;
+			var allLableData = jsonModel.getProperty("/allLableData");
+			var labelID = that.generateLabels(uniqueText, allLableData);
+
 			if (sItems.length > 0) {
 				$.each(sItems, function (i, e) {
 					sObj = table.getContextByIndex(e).getObject();
@@ -831,6 +840,7 @@ sap.ui.define([
 						U_NLCNM: sObj.WhsCode + " - " + sObj.WhsName, //location
 						U_NCLPL: "Plant", // clone or plant
 						U_NPHSE: "Micro Propagation", //phase
+						U_NWTLB: labelID, //bag labels
 						U_NLFID: jsonModel.getProperty("/selectedLicense")
 					};
 					batchUrl.push({
@@ -909,6 +919,7 @@ sap.ui.define([
 					U_NCRDT: cDate,
 					U_NLUDT: that.convertUTCDateTime(new Date()),
 					U_NLCNM: selObject.WhsCode + " - " + selObject.WhsName,
+					U_NWTLB: labelID, //bag labels
 				};
 				batchUrl.push({
 					url: "/b1s/v2/NWTHS",
@@ -941,11 +952,8 @@ sap.ui.define([
 			if (!this.reportWasteDialog) {
 				this.reportWasteDialog = sap.ui.xmlfragment("rWaste", "com.9b.MacroPropagation.view.fragments.RecordResidue", this);
 				this.getView().addDependent(this.reportWasteDialog);
-				var rSelect = "?$select=Name";
-				this.readServiecLayer("/b1s/v2/U_NWREA" + rSelect, function (data) {
-					jsonModel.setProperty("/WasteReasonsList", data.value);
-				});
 			}
+			this.onLoadWasteReasonMethod();
 			this.reportWasteDialog.open();
 
 			var allBatchID = jsonModel.getProperty("/macroPropagationTableData");
@@ -1013,6 +1021,14 @@ sap.ui.define([
 				sap.m.MessageToast.show("Please select Date");
 				return;
 			} else {
+				var d = new Date();
+				var day = d.getDate().toString().padStart(2, "0");
+				var month = (d.getMonth() + 1).toString().padStart(2, "0");
+				var year = d.getFullYear();
+				var uniqueText = year + "" + month + "" + day;
+				var allLableData = jsonModel.getProperty("/allLableData");
+				var labelID = that.generateLabels(uniqueText, allLableData);
+
 				var date = sap.ui.core.Fragment.byId("rWaste", "wRecDate").getDateValue();
 				var payLoad = {
 					U_NPBID: batchID,
@@ -1024,6 +1040,7 @@ sap.ui.define([
 					U_NPQTY: 0,
 					U_NCRDT: that.convertUTCDateTime(date),
 					U_NLUDT: that.convertUTCDateTime(new Date()),
+					U_NWTLB: labelID, //bag labels
 				};
 				that.updateServiecLayer("/b1s/v2/NWTHS", function () {
 					that.reportWasteDialog.close();

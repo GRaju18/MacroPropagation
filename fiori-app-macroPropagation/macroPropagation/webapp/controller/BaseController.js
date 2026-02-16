@@ -347,6 +347,36 @@ sap.ui.define([
 			}
 			return id;
 		},
+		generateLabels: function (text, data) {
+			var labelCode = "RES";
+			var maxValue, returnValue;
+			if (data.length > 0) {
+				var existingBatches = $.grep(data, function (e) {
+					if (e.U_NWTLB != null) {
+						if (e.U_NWTLB.search(labelCode) > -1) {
+							return e;
+						}
+					}
+				});
+				if (existingBatches.length > 0) {
+					maxValue = Math.max.apply(Math, existingBatches.map(function (existingBatches) {
+						var bId = existingBatches.U_NWTLB.split("-")[existingBatches.U_NWTLB.split("-").length - 1];
+						returnValue = bId.replace(/^\D+/g, '');
+						return returnValue;
+					}));
+				} else {
+					maxValue = 0;
+				}
+			} else {
+				maxValue = 0;
+			}
+			var n, s, id;
+			for (n = maxValue; n <= (maxValue + 1); n++) {
+				s = n + "";
+				id = text + "-" + labelCode + "-" + s;
+			}
+			return id;
+		},
 		errorHandler: function (error) {
 			var that = this;
 			var resText = JSON.parse(error.responseText).error.message.value;
