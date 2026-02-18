@@ -960,7 +960,9 @@ sap.ui.define([
 			var batchIDListArr = [];
 			$.each(allBatchID, function (i, e) {
 				batchIDListArr.push({
-					"IntrSerial": e.IntrSerial
+					"IntrSerial": e.IntrSerial,
+					"WhsCode": e.WhsCode,
+					"WhsName": e.WhsName,
 				});
 			});
 			const uniqueArr = [...new Map(batchIDListArr.map(o => [o.IntrSerial, o])).values()];
@@ -995,7 +997,10 @@ sap.ui.define([
 				licenseNo = "";
 			}
 			var macroPropagationTable = this.getView().byId("macroPropagationTable");
-			var batchID = sap.ui.core.Fragment.byId("rWaste", "batchID").getSelectedKey();
+			//var batchID = sap.ui.core.Fragment.byId("rWaste", "batchID").getSelectedKey();
+			var batchArray = sap.ui.core.Fragment.byId("rWaste", "batchID");
+			var batchID = batchArray.getSelectedKey();
+			var selObj = batchArray.getSelectedItem().getBindingContext("jsonModel").getObject();
 			var wasteWtValue = sap.ui.core.Fragment.byId("rWaste", "wasteWt").getValue();
 			var wasteuom = sap.ui.core.Fragment.byId("rWaste", "uom").getSelectedKey();
 			var reason = sap.ui.core.Fragment.byId("rWaste", "reason").getSelectedKey();
@@ -1041,6 +1046,7 @@ sap.ui.define([
 					U_NCRDT: that.convertUTCDateTime(date),
 					U_NLUDT: that.convertUTCDateTime(new Date()),
 					U_NWTLB: labelID, //bag labels
+					U_NLCNM: selObj.WhsCode + " - " + selObj.WhsName, //location
 				};
 				that.updateServiecLayer("/b1s/v2/NWTHS", function () {
 					that.reportWasteDialog.close();
