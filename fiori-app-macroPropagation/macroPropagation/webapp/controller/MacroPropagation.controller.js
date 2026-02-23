@@ -758,6 +758,19 @@ sap.ui.define([
 				return;
 			}
 		},
+		onCalculateGrossNew: function () {
+			var WasteNetWeight = sap.ui.core.Fragment.byId("ConfirmDestroyPlant", "wasteWt").getValue();
+			var WasteUOM = sap.ui.core.Fragment.byId("ConfirmDestroyPlant", "uom").getSelectedKey("");
+			var BagWeight = sap.ui.core.Fragment.byId("ConfirmDestroyPlant", "bagWt").getValue("");
+			if (WasteNetWeight != "" && BagWeight != "") {
+				if (WasteUOM == 'Grams') {
+					var GrossWeight = Number(WasteNetWeight) + Number(BagWeight);
+				} else {
+					var GrossWeight = (Number(WasteNetWeight) * 1000) + Number(BagWeight);
+				}
+				sap.ui.core.Fragment.byId("ConfirmDestroyPlant", "grossWt").setValue(GrossWeight);
+			}
+		},
 		onWtChange: function (evt) {
 			var value = evt.getParameter("newValue");
 			value = value.replace(/[^.\d]/g, '').replace(/^(\d*\.?)|(\d*)\.?/g, "$1$2");
@@ -787,6 +800,8 @@ sap.ui.define([
 			var notes = sap.ui.core.Fragment.byId("ConfirmDestroyPlant", "notes").getValue();
 			var wRecDate = sap.ui.core.Fragment.byId("ConfirmDestroyPlant", "wRecDate").getValue();
 			var wasteWt = Number(sap.ui.core.Fragment.byId("ConfirmDestroyPlant", "wasteWt").getValue());
+			var bagWt = Number(sap.ui.core.Fragment.byId("ConfirmDestroyPlant", "bagWt").getValue());
+			var grossWt = Number(sap.ui.core.Fragment.byId("ConfirmDestroyPlant", "grossWt").getValue());
 			var plantCount = sItems.length;
 			var weightPerPlant = Number(wasteWt) / plantCount;
 			if (wasteWt === "" || wasteWt === 0) {
@@ -797,6 +812,9 @@ sap.ui.define([
 				return;
 			} else if (uom === "") {
 				sap.m.MessageToast.show("Please select waste UOM");
+				return;
+			} else if (bagWt === "") {
+				sap.m.MessageToast.show("Please enter bag weight");
 				return;
 			} else if (reason === "") {
 				sap.m.MessageToast.show("Please select reason");
@@ -831,6 +849,8 @@ sap.ui.define([
 						U_NPLID: sObj.BatchNum,
 						U_NWTWT: weightPerPlant.toFixed(2),
 						U_NWTUM: uom,
+						U_BagWeight: bagWt.toFixed(2), //bag weight
+						U_GrossWeight: grossWt.toFixed(2), //gross weight
 						U_NDTRS: reason,
 						U_NNOTE: notes,
 						U_NPQTY: 1,
@@ -912,6 +932,8 @@ sap.ui.define([
 					U_NPBID: selObject.IntrSerial,
 					U_NWTWT: wasteWt.toFixed(2),
 					U_NWTUM: uom,
+					U_BagWeight: bagWt.toFixed(2), //bag weight
+					U_GrossWeight: grossWt.toFixed(2), //gross weight
 					U_NWTRS: reason,
 					U_NNOTE: notes,
 					U_NLFID: jsonModel.getProperty("/selectedLicense"),
@@ -968,13 +990,27 @@ sap.ui.define([
 			const uniqueArr = [...new Map(batchIDListArr.map(o => [o.IntrSerial, o])).values()];
 			// var UniqueBatchIDList = [new Set(batchIDListArr)];
 			jsonModel.setProperty("/UniqueBatchIDList", uniqueArr);
-
 			sap.ui.core.Fragment.byId("rWaste", "batchID").setSelectedKey("");
 			sap.ui.core.Fragment.byId("rWaste", "wasteWt").setValue("");
 			sap.ui.core.Fragment.byId("rWaste", "uom").setSelectedKey("");
+			sap.ui.core.Fragment.byId("rWaste", "bagWt").setValue("");
+			sap.ui.core.Fragment.byId("rWaste", "grossWt").setValue("");
 			sap.ui.core.Fragment.byId("rWaste", "reason").setSelectedKey("");
 			sap.ui.core.Fragment.byId("rWaste", "notes").setValue("");
 			sap.ui.core.Fragment.byId("rWaste", "wRecDate").setDateValue(new Date());
+		},
+		onCalculateGross: function () {
+			var WasteNetWeight = sap.ui.core.Fragment.byId("rWaste", "wasteWt").getValue();
+			var WasteUOM = sap.ui.core.Fragment.byId("rWaste", "uom").getSelectedKey("");
+			var BagWeight = sap.ui.core.Fragment.byId("rWaste", "bagWt").getValue("");
+			if (WasteNetWeight != "" && BagWeight != "") {
+				if (WasteUOM == 'Grams') {
+					var GrossWeight = Number(WasteNetWeight) + Number(BagWeight);
+				} else {
+					var GrossWeight = (Number(WasteNetWeight) * 1000) + Number(BagWeight);
+				}
+				sap.ui.core.Fragment.byId("rWaste", "grossWt").setValue(GrossWeight);
+			}
 		},
 		onChangeReportWaste: function (evt) {
 			var value = evt.getParameter("newValue");
@@ -1003,6 +1039,8 @@ sap.ui.define([
 			var selObj = batchArray.getSelectedItem().getBindingContext("jsonModel").getObject();
 			var wasteWtValue = sap.ui.core.Fragment.byId("rWaste", "wasteWt").getValue();
 			var wasteuom = sap.ui.core.Fragment.byId("rWaste", "uom").getSelectedKey();
+			var bagWt = Number(sap.ui.core.Fragment.byId("rWaste", "bagWt").getValue());
+			var grossWt = Number(sap.ui.core.Fragment.byId("rWaste", "grossWt").getValue());
 			var reason = sap.ui.core.Fragment.byId("rWaste", "reason").getSelectedKey();
 			var note = sap.ui.core.Fragment.byId("rWaste", "notes").getValue();
 			var wRecDate = sap.ui.core.Fragment.byId("rWaste", "wRecDate").getValue();
@@ -1018,6 +1056,9 @@ sap.ui.define([
 				return;
 			} else if (wasteuom === "") {
 				sap.m.MessageToast.show("Please select waste UOM");
+				return;
+			} else if (bagWt === "") {
+				sap.m.MessageToast.show("Please enter bag weight");
 				return;
 			} else if (reason === "") {
 				sap.m.MessageToast.show("Please select reason");
@@ -1039,6 +1080,8 @@ sap.ui.define([
 					U_NPBID: batchID,
 					U_NWTWT: wasteWt.toFixed(2),
 					U_NWTUM: wasteuom,
+					U_BagWeight: bagWt.toFixed(2), //bag weight
+					U_GrossWeight: grossWt.toFixed(2), //gross weight
 					U_NWTRS: reason,
 					U_NNOTE: note,
 					U_NLFID: licenseNo,

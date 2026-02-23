@@ -7,13 +7,19 @@
 		</customHeader>
 		<content>
 			<FlexBox direction="Column">
-				<InputListItem label="Waste Weight">
-					<Input id="wasteWt" width="12rem" value="{jsonModel>U_NWTWT}" required="true" liveChange="onWtChange"/>
+				<InputListItem label="Waste Net Weight">
+					<Input id="wasteWt" width="12rem" value="{jsonModel>U_NWTWT}" required="true" liveChange="onWtChange" change="onCalculateGrossNew"/>
 				</InputListItem>
 				<InputListItem label="Waste UOM">
 					<Select width="12rem" id="uom" selectedKey="{jsonModel>U_NWTUM}" forceSelection="false" items="{path: 'jsonModel>/uomVals'}">
 						<core:Item key="{jsonModel>key}" text="{jsonModel>text}"/>
 					</Select>
+				</InputListItem>
+				<InputListItem label="Bag Weight (g)">
+					<Input id="bagWt" width="12rem" required="true" type="Number" change="onCalculateGrossNew" value="{jsonModel>U_BagWeight}"/>
+				</InputListItem>
+				<InputListItem label="Gross Weight (g)">
+					<Input id="grossWt" width="12rem" required="true" type="Number" editable="false" value="{jsonModel>U_GrossWeight}"/>
 				</InputListItem>
 				<InputListItem label="Reason">
 					<Select id="reason" width="12rem" selectedKey="{jsonModel>U_NWTRS}" items="{path: 'jsonModel>/WasteReasonsList'}" forceSelection="false">
@@ -28,9 +34,9 @@
 				</InputListItem>
 			</FlexBox>
 		</content>
-		<beginButton><Button type="Emphasized" text="Destroy Plants" press="onDestroyPlant" tooltip="Destroy Plants"/></beginButton>
+		<beginButton><Button type="Emphasized" text="Destroy Plants" press="onDestroyPlant"/></beginButton>
 		<endButton>
-			<Button type="Transparent" text="Cancel" press="onDestroyClose" tooltip="Cancel"></Button>
+			<Button type="Transparent" text="Cancel" press="onDestroyClose"></Button>
 		</endButton>
 	</Dialog>
 </core:FragmentDefinition>

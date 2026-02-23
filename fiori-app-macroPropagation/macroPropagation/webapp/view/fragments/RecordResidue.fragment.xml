@@ -1,6 +1,5 @@
 <core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:l="sap.ui.layout">
-	<Dialog id="createClone" contentWidth="23rem" class="sapUiSizeCompact iconDialog waterDialog" stretch="{device>/system/phone}"
-		draggable="true">
+	<Dialog id="createClone" class="sapUiSizeCompact iconDialog waterDialog" stretch="{device>/system/phone}" draggable="true">
 		<customHeader>
 			<Bar>
 				<contentMiddle>
@@ -11,28 +10,38 @@
 		<content>
 			<FlexBox direction="Column">
 				<InputListItem label="Batch ID">
-					<Select id="batchID" width="12rem" items="{path: 'jsonModel>/UniqueBatchIDList'}" forceSelection="false">
+					<Select id="batchID" width="17rem" items="{path: 'jsonModel>/UniqueBatchIDList'}" forceSelection="false">
 						<core:Item key="{jsonModel>IntrSerial}" text="{jsonModel>IntrSerial}"/>
 					</Select>
 				</InputListItem>
-				<InputListItem label="{i18n>WasteWeight}">
-					<Input id="wasteWt" width="12rem" required="true" liveChange="onChangeReportWaste"/>
+				<InputListItem label="Waste Net Weight">
+					<Input id="wasteWt" width="17rem" required="true" type="Number" change="onCalculateGross"/>
 				</InputListItem>
 				<InputListItem label="{i18n>WasteUOM}">
-					<Select width="12rem" id="uom" forceSelection="false" items="{path: 'jsonModel>/uomVals'}">
+					<Select width="17rem" id="uom" forceSelection="false" items="{path: 'jsonModel>/uomVals'}">
 						<core:Item key="{jsonModel>key}" text="{jsonModel>text}"/>
 					</Select>
 				</InputListItem>
+				<InputListItem label="Bag Weight (g)">
+					<Input id="bagWt" width="17rem" required="true" type="Number" change="onCalculateGross"/>
+				</InputListItem>
+				<InputListItem label="Gross Weight (g)">
+					<Input id="grossWt" width="17rem" required="true" type="Number" editable="false"/>
+				</InputListItem>
 				<InputListItem label="{i18n>Reason}">
-					<Select id="reason" width="12rem" items="{path: 'jsonModel>/WasteReasonsList'}" forceSelection="false">
+					<Select id="reason" width="17rem" items="{path: 'jsonModel>/WasteReasonsList'}" forceSelection="false">
 						<core:Item key="{jsonModel>Name}" text="{jsonModel>Name}"/>
 					</Select>
+					<!--<SearchField width="17rem" id="reason" search="onSearchLicense" enableSuggestions="true" suggestionItems="{jsonModel>/WasteReasonsList}"-->
+					<!--	suggest="onSuggestLocation" value="{jsonModel>/selectedReason}">-->
+					<!--	<SuggestionItem text="{jsonModel>Name}"/>-->
+					<!--</SearchField>-->
 				</InputListItem>
 				<InputListItem label="{i18n>Notes}">
-					<Input id="notes" width="12rem" required="true"/>
+					<Input id="notes" width="17rem" required="true"/>
 				</InputListItem>
 				<InputListItem label="{i18n>WasteRecordDate}">
-					<DatePicker id="wRecDate" width="12rem" displayFormat="yyyy-MM-dd" required="true"/>
+					<DatePicker id="wRecDate" width="17rem" displayFormat="yyyy-MM-dd" required="true"/>
 				</InputListItem>
 			</FlexBox>
 		</content>

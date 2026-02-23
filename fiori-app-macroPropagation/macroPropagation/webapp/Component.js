@@ -45,7 +45,7 @@ sap.ui.define([
 
 			//set the odata service call model
 			var jsonModel = new JSONModel({
-				versionInfo: "v1.125.07",
+				versionInfo: "v1.125.08",
 				strainList: [],
 				createMode: false,
 				serLayerbaseUrl: "https://login.seedandbeyond.com:50000",
