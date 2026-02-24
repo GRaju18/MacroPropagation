@@ -347,6 +347,35 @@ sap.ui.define([
 			}
 			return id;
 		},
+		generateClonePackageBatchID: function (text, strainID, data) {
+			var maxValue, returnValue;
+			if (data.length > 0) {
+				var existingBatches = $.grep(data, function (e) {
+					if (e.BatchNum != null) {
+						if (e.BatchNum.search(strainID) > -1) {
+							return e;
+						}
+					}
+				});
+				if (existingBatches.length > 0) {
+					maxValue = Math.max.apply(Math, existingBatches.map(function (existingBatches) {
+						var bId = existingBatches.BatchNum.split("-")[existingBatches.BatchNum.split("-").length - 1];
+						returnValue = bId.replace(/^\D+/g, '');
+						return returnValue;
+					}));
+				} else {
+					maxValue = 0;
+				}
+			} else {
+				maxValue = 0;
+			}
+			var n, s, id;
+			for (n = maxValue; n <= (maxValue + 1); n++) {
+				s = n + "";
+				id = text + "-" + strainID + "-PC" + s;
+			}
+			return id;
+		},
 		generateLabels: function (text, data) {
 			var labelCode = "RES";
 			var maxValue, returnValue;

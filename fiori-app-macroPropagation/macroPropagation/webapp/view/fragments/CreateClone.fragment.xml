@@ -19,7 +19,7 @@
 							<items>
 								<core:Item key="Mother" text="Mother"/>
 								<core:Item key="Vegetation" text="Cultivation"/>
-								<core:Item key="Macro_Clone" text="Packages"/>
+								<core:Item key="Macro_Clone" text="Packaging"/>
 							</items>
 						</Select>
 					</InputListItem>
@@ -36,7 +36,7 @@
 			</FlexBox>
 		</content>
 		<beginButton>
-			<Button type="Emphasized" text="{i18n>Create}" press="onMoveClones"/>
+			<Button type="Emphasized" text="Move" press="onMoveClones"/>
 		</beginButton>
 		<endButton>
 			<Button type="Transparent" text="{i18n>Close}" press="onCloneClose" tooltip="Close"/>

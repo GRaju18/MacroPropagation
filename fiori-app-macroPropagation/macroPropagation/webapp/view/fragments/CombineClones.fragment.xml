@@ -1,0 +1,42 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:l="sap.ui.layout">
+	<Dialog id="cloneChangeGrowthPhase" draggable="true" contentWidth="28rem" class="sapUiSizeCompact iconDialog waterDialog">
+		<customHeader>
+			<Bar>
+				<contentMiddle>
+					<Label text="Combine Clones"/>
+				</contentMiddle>
+			</Bar>
+		</customHeader>
+		<content>
+			<FlexBox direction="Column">
+				<InputListItem label="Batch ID">
+					<Input id="batchID" editable="false" width="15rem" value="{jsonModel>/bulkHarvestObj/IntrSerial}"/>
+				</InputListItem>
+				<InputListItem label="Strain name">
+					<Input id="strain" editable="false" width="15rem" value="{jsonModel>/bulkHarvestObj/U_NSTNM}"/>
+				</InputListItem>
+				<InputListItem label="Package ID">
+					<Input id="packageID" width="15rem" value="{jsonModel>/bulkHarvestObj/packageID}" change="bulkHarvestNameChange"/>
+				</InputListItem>
+				<InputListItem label="Package Weight (g)">
+					<Input id="bagWt" width="15rem" type="Number" value="{jsonModel>/bulkHarvestObj/bagWeight}" change="onCalculateGrossHarvest"/>
+				</InputListItem>
+				<InputListItem label="Net Weight (g)">
+					<Input id="newWt" width="15rem" type="Number" value="{jsonModel>/bulkHarvestObj/netWeight}" change="onCalculateGrossHarvest"/>
+				</InputListItem>
+				<InputListItem label="Gross Weight (g)">
+					<Input id="grossWt" width="15rem" type="Number" editable="false" value="{jsonModel>/bulkHarvestObj/grossWeight}"/>
+				</InputListItem>
+				<InputListItem label="Date">
+					<DatePicker id="mDate" displayFormat="yyyy-MM-dd" width="15rem"/>
+				</InputListItem>
+			</FlexBox>
+		</content>
+		<beginButton>
+			<Button id="seachBtn" text="Combine Clones" press="postBulkHarvestData" type="Emphasized"></Button>
+		</beginButton>
+		<endButton>
+			<Button text="Close" type="Transparent" press="onHarvestClose" width="5rem"/>
+		</endButton>
+	</Dialog>
+</core:FragmentDefinition>

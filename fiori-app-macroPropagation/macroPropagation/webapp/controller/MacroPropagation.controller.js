@@ -63,8 +63,10 @@ sap.ui.define([
 			var filters;
 			if (selTab == "CLONECULTIVATION") {
 				filters = "?$filter=U_MetrcLicense eq " + "'" + licenseNo + "'  and Quantity ne 0 and U_Phase eq 'Macro' ";
-			} else if (selTab == "PACKAGES") {
+			} else if (selTab == "PACKAGING") {
 				filters = "?$filter=U_MetrcLicense eq " + "'" + licenseNo + "'  and Quantity ne 0 and U_Phase eq 'Macro_Clone'";
+			} else if (selTab == "PACKAGES") {
+				filters = "?$filter=U_MetrcLicense eq " + "'" + licenseNo + "'  and Quantity ne 0 and U_Phase eq 'Macro_Pack'";
 			}
 
 			var orderBy = "&$orderby=BatchNum desc";
@@ -90,6 +92,7 @@ sap.ui.define([
 				jsonModel.setProperty("/macroPropagationTableData", data.value);
 				this.byId("tableHeader1").setText("Plants (" + data.value.length + ")");
 				this.byId("tableHeader2").setText("Plants (" + data.value.length + ")");
+				this.byId("tableHeader3").setText("Plants (" + data.value.length + ")");
 			}, this.getView());
 		},
 		loadAllData: function () {
@@ -213,6 +216,14 @@ sap.ui.define([
 			var createdDate = dateFormat.format(createDate);
 			var that = this;
 			var sItems = table.getSelectedIndices();
+			if (Phase === "") {
+				sap.m.MessageToast.show("Please select phase");
+				return;
+			}
+			if (locationID === "") {
+				sap.m.MessageToast.show("Please select location");
+				return;
+			}
 
 			//inventory entry to clone item
 			//var CloneItemsList = jsonModel.getProperty("/CloneItemsList");
@@ -591,6 +602,182 @@ sap.ui.define([
 			} else {
 				sap.m.MessageToast.show("Please select atleast one plant");
 			}
+		},
+		//method for combine clones
+		combineClones: function () {
+			var jsonModel = this.getOwnerComponent().getModel("jsonModel");
+			var macroPropagationTable = this.getView().byId("macroPropagationTable");
+			var sItems = macroPropagationTable.getSelectedIndices();
+			if (sItems.length > 0) {
+				var sObj = macroPropagationTable.getContextByIndex(sItems[0]).getObject();
+				//check single batch is selected or not
+				var batchIDArray = [];
+				$.each(sItems, function (i, e) {
+					var sObj = macroPropagationTable.getContextByIndex(e).getObject();
+					batchIDArray.push(sObj.IntrSerial);
+				});
+				var allSame = new Set(batchIDArray).size === 1;
+				if (allSame == false) {
+					sap.m.MessageToast.show("Please select same batch ID");
+					return;
+				}
+				if (!this.bulkHarvestDialog) {
+					this.bulkHarvestDialog = sap.ui.xmlfragment("harvestB", "com.9b.MacroPropagation.view.fragments.CombineClones", this);
+					this.getView().addDependent(this.bulkHarvestDialog);
+				}
+				this.clearBulkHarvestData(sObj);
+				this.loadAllPackageData(sObj);
+				this.bulkHarvestDialog.open();
+			} else {
+				sap.m.MessageToast.show("Please select atleast one plant");
+				return;
+			}
+		},
+		clearBulkHarvestData: function (sObj) {
+			var jsonModel = this.getOwnerComponent().getModel("jsonModel");
+			sap.ui.core.Fragment.byId("harvestB", "mDate").setDateValue(new Date());
+			var bulkHarvestObj = {
+				ItemCode: sObj.ItemCode,
+				IntrSerial: sObj.IntrSerial,
+				packageID: "",
+				U_NSTNM: sObj.U_NSTNM,
+				netWeight: "",
+				bagWeight: "",
+				grossWeight: "",
+				locationID: sObj.WhsCode,
+				U_BatAttr3: sObj.U_BatAttr3,
+			};
+			jsonModel.setProperty("/bulkHarvestObj", bulkHarvestObj);
+			jsonModel.setProperty("/scannedBatchPlants", sObj);
+		},
+		loadAllPackageData: function (sObj) {
+			var that = this;
+			var jsonModel = this.getOwnerComponent().getModel("jsonModel");
+			var filters1 = "?$filter=U_MetrcLicense eq " + "'" + jsonModel.getProperty("/selectedLicense") + "' and U_Phase eq 'Macro_Pack' ";
+			var cSelect1 = "&$select=BatchNum,IntrSerial";
+			this.readServiecLayer("/b1s/v2/sml.svc/CV_PLANNER_VW" + filters1 + cSelect1, function (data) {
+				jsonModel.setProperty("/allPackageData", data.value);
+				that.generatePackageID(sObj);
+			});
+		},
+		generatePackageID: function (sObj) {
+			var that = this;
+			var jsonModel = this.getOwnerComponent().getModel("jsonModel");
+			var packageData = jsonModel.getProperty("/allPackageData");
+			var d = new Date();
+			var day = d.getDate().toString().padStart(2, "0");
+			var month = (d.getMonth() + 1).toString().padStart(2, "0");
+			var year = d.getFullYear();
+			var uniqueText = year + "" + month + "" + day;
+			var bTagValue = sObj.ItemName;
+			var itemValue = bTagValue.split(" - ")[0];
+			var strainCode = itemValue.split(":")[0];
+			var packageID = that.generateClonePackageBatchID(uniqueText, strainCode, packageData);
+			jsonModel.setProperty("/bulkHarvestObj/packageID", packageID);
+		},
+		onCalculateGrossHarvest: function () {
+			var jsonModel = this.getOwnerComponent().getModel("jsonModel");
+			var WasteNetWeight = sap.ui.core.Fragment.byId("harvestB", "newWt").getValue();
+			var BagWeight = sap.ui.core.Fragment.byId("harvestB", "bagWt").getValue("");
+			if (WasteNetWeight != "" && BagWeight != "") {
+				var GrossWeight = Number(WasteNetWeight) + Number(BagWeight);
+				jsonModel.setProperty("/bulkHarvestObj/grossWeight", GrossWeight);
+				//sap.ui.core.Fragment.byId("harvestB", "grossWt").setValue(GrossWeight);
+			}
+		},
+		onHarvestClose: function () {
+			this.bulkHarvestDialog.close();
+		},
+		postBulkHarvestData: function () {
+			var that = this;
+			var itemArray = [],
+				ItemCode;
+			var jsonModel = this.getOwnerComponent().getModel("jsonModel");
+			var licenseNo = jsonModel.getProperty("/selectedLicense");
+			var createDate = sap.ui.core.Fragment.byId("harvestB", "mDate").getDateValue();
+			var dateFormat = DateFormat.getDateInstance({
+				pattern: "yyyy-MM-dd"
+			});
+			var createdDate = dateFormat.format(createDate);
+			var bulkHarvestObj = jsonModel.getProperty("/bulkHarvestObj");
+			var ItemCode = bulkHarvestObj.ItemCode;
+			var batchID = bulkHarvestObj.IntrSerial;
+			var packageID = bulkHarvestObj.packageID;
+			var netWeight = bulkHarvestObj.netWeight;
+			var bagWeight = bulkHarvestObj.bagWeight;
+			var grossWeight = bulkHarvestObj.grossWeight;
+			var locationID = bulkHarvestObj.locationID;
+			var U_BatAttr3 = bulkHarvestObj.U_BatAttr3;
+
+			if (packageID === "") {
+				sap.m.MessageToast.show("Please enter Harvest Name");
+				return;
+			} else if (netWeight <= "0" || netWeight <= 0) {
+				sap.m.MessageToast.show("Net weigth must be greater than 0");
+				return;
+			} else if (bagWeight <= "0" || bagWeight <= 0) {
+				sap.m.MessageToast.show("Package weigth must be greater than 0");
+				return;
+			}
+
+			jsonModel.setProperty("/busyView", true);
+			var batchUrl = [];
+			jsonModel.setProperty("/errorTxt", []);
+
+			// var sPlants = jsonModel.getProperty("/scannedBatchPlants");
+			// var harvestCout = Number(sPlants.U_HarvestBatch);
+			// var payLoadInventoryEntry = {
+			// 	U_HarvestBatch: harvestCout + 1
+			// };
+			// batchUrl.push({
+			// 	url: "/b1s/v2/BatchNumberDetails(" + sPlants.AbsEntry + ")",
+			// 	data: payLoadInventoryEntry,
+			// 	method: "PATCH"
+			// });
+
+			//entry to package tab
+			var payLoadInventory = {
+				"BPL_IDAssignedToInvoice": jsonModel.getProperty("/sLinObj").U_NBRCD,
+				"DocDate": createdDate,
+				"DocDueDate": createdDate,
+				"DocumentLines": []
+			};
+			payLoadInventory.DocumentLines.push({
+				"ItemCode": ItemCode,
+				"WarehouseCode": locationID,
+				"Quantity": netWeight,
+				"BatchNumbers": [{
+					"BatchNumber": packageID,
+					"Quantity": netWeight,
+					"Location": locationID,
+					"U_Phase": "Macro_Pack",
+					"U_NetWeight": netWeight,
+					"U_GrossWeight": grossWeight,
+					"U_BagWeight": bagWeight,
+					"ManufacturerSerialNumber": batchID, //source UID
+					"U_BatAttr3": U_BatAttr3 + ":" + batchID, //all sources
+					"InternalSerialNumber": batchID //harvest name
+				}],
+			});
+			batchUrl.push({
+				url: "/b1s/v2/InventoryGenEntries",
+				data: payLoadInventory,
+				method: "POST"
+			});
+			//return;
+			jsonModel.setProperty("/busyView", true);
+			that.createBatchCall(batchUrl, function () {
+				var errorTxt = jsonModel.getProperty("/errorTxt");
+				if (errorTxt.length > 0) {
+					sap.m.MessageBox.error(errorTxt.join("\n"));
+				} else {
+					sap.m.MessageToast.show("Combined Clones Successfully");
+				}
+				jsonModel.setProperty("/busyView", false);
+				that.bulkHarvestDialog.close();
+				that.loadMasterData();
+				that.byId("macroPropagationTable").setSelectedIndex(-1);
+			});
 		},
 
 		//method for send to receiption
@@ -1114,9 +1301,9 @@ sap.ui.define([
 				filterTable.filter(aColumns[i], null);
 				filterTable.sort(aColumns[i], null);
 			}
-			this.byId("searchFieldTable").removeAllTokens();
 			this.byId("searchFieldTable1").removeAllTokens();
 			this.byId("searchFieldTable2").removeAllTokens();
+			this.byId("searchFieldTable3").removeAllTokens();
 		},
 		onFilterTable: function (evt) {
 			var customData = evt.getParameter("column").getLabel().getCustomData();
@@ -1153,9 +1340,9 @@ sap.ui.define([
 		},
 		onPlantsRefresh: function () {
 			this.clearAllFilters();
-			this.byId("searchFieldTable").removeAllTokens();
 			this.byId("searchFieldTable1").removeAllTokens();
 			this.byId("searchFieldTable2").removeAllTokens();
+			this.byId("searchFieldTable3").removeAllTokens();
 			this.loadMasterData();
 		},
 		handleRowSelection: function () {

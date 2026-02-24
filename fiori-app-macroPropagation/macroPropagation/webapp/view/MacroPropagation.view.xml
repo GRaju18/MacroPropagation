@@ -38,6 +38,7 @@
 				stretchContentHeight="true">
 				<items>
 					<IconTabFilter text="Clone Cultivation" key="CLONECULTIVATION"/>
+					<IconTabFilter text="Packaging " key="PACKAGING"/>
 					<IconTabFilter text="Packages" key="PACKAGES"/>
 				</items>
 				<content>
@@ -51,29 +52,45 @@
 										<Text class="tableTitle" id="tableHeader1" text="Plants"/>
 										<ToolbarSpacer/>
 										<MultiInput width="25rem" placeholder="Search" tokenUpdate="tokenUpdateMultiInput" submit="onSubmitMultiInput" showValueHelp="false"
-											liveChange="onChangeMultiInput" id="searchFieldTable" enableMultiLineMode="true"/>
+											liveChange="onChangeMultiInput" id="searchFieldTable1" enableMultiLineMode="true"/>
 										<Button text="{i18n>ClearAllFilters}" press="clearAllFilters"/>
 										<Text class="sapMTBSeparator"/>
 										<Button text="Move Clones" press="moveClones" type="Default"/>
 										<Button text="Destroy Plants" press="performDestroyPlants" type="Reject"></Button>
 										<Button text="Record Residue" press="performRecordResidue" type="Default"></Button>
 									</OverflowToolbar>
-									<OverflowToolbar visible="{= ${jsonModel>/sIconTab} === 'PACKAGES'}">
+									<OverflowToolbar visible="{= ${jsonModel>/sIconTab} === 'PACKAGING'}">
 										<Text class="tableTitle" id="tableHeader2" text="Plants"/>
 										<ToolbarSpacer/>
 										<MultiInput width="25rem" placeholder="Search" tokenUpdate="tokenUpdateMultiInput" submit="onSubmitMultiInput" showValueHelp="false"
-											liveChange="onChangeMultiInput" id="searchFieldTable5" enableMultiLineMode="true"/>
+											liveChange="onChangeMultiInput" id="searchFieldTable2" enableMultiLineMode="true"/>
 										<Button text="{i18n>ClearAllFilters}" press="clearAllFilters"/>
 										<Text class="sapMTBSeparator"/>
-										<Button text="Sell Clones" press="sellClones" type="Default"/>
+										<Button text="Combine Clones" press="combineClones" type="Default"/>
 										<Button text="Send To Clone Cultivation" press="sendToReception" type="Default"/>
 										<Button text="Destroy Plants" press="performDestroyPlants" type="Reject"/>
 										<Button text="Record Residue" press="performRecordResidue" type="Default"></Button>
 									</OverflowToolbar>
+									<OverflowToolbar visible="{= ${jsonModel>/sIconTab} === 'PACKAGES'}">
+										<Text class="tableTitle" id="tableHeader3" text="Plants"/>
+										<ToolbarSpacer/>
+										<MultiInput width="25rem" placeholder="Search" tokenUpdate="tokenUpdateMultiInput" submit="onSubmitMultiInput" showValueHelp="false"
+											liveChange="onChangeMultiInput" id="searchFieldTable3" enableMultiLineMode="true"/>
+										<Button text="{i18n>ClearAllFilters}" press="clearAllFilters"/>
+										<Text class="sapMTBSeparator"/>
+										<Button text="Sell" press="sellClones" type="Default"/>
+									</OverflowToolbar>
 								</table:extension>
 								<table:columns>
-									<table:Column sortProperty="BatchNum" filterProperty="BatchNum">
+									<table:Column sortProperty="BatchNum" filterProperty="BatchNum"
+										visible="{= ${jsonModel>/sIconTab} === 'CLONECULTIVATION' || ${jsonModel>/sIconTab} === 'PACKAGING'}">
 										<Label text="Plant ID" design="Bold"/>
+										<table:template>
+											<Text text="{jsonModel>BatchNum}" wrapping="true"/>
+										</table:template>
+									</table:Column>
+									<table:Column sortProperty="BatchNum" filterProperty="BatchNum" visible="{= ${jsonModel>/sIconTab} === 'PACKAGES'}">
+										<Label text="Package ID" design="Bold"/>
 										<table:template>
 											<Text text="{jsonModel>BatchNum}" wrapping="true"/>
 										</table:template>
@@ -107,6 +124,24 @@
 										<Label text="{i18n>Location}" design="Bold"/>
 										<table:template>
 											<Text text="{jsonModel>WhsCode} - {jsonModel>WhsName}" wrapping="true"/>
+										</table:template>
+									</table:Column>
+									<table:Column sortProperty="U_NetWeight" filterProperty="U_NetWeight" visible="{= ${jsonModel>/sIconTab} === 'PACKAGES'}">
+										<Label text="Net Weight (g)" design="Bold"/>
+										<table:template>
+											<Text text="{jsonModel>U_NetWeight}" wrapping="true"/>
+										</table:template>
+									</table:Column>
+									<table:Column sortProperty="U_BagWeight" filterProperty="U_BagWeight" visible="{= ${jsonModel>/sIconTab} === 'PACKAGES'}">
+										<Label text="Package Weight (g)" design="Bold"/>
+										<table:template>
+											<Text text="{jsonModel>U_BagWeight}" wrapping="true"/>
+										</table:template>
+									</table:Column>
+									<table:Column sortProperty="U_GrossWeight" filterProperty="U_GrossWeight" visible="{= ${jsonModel>/sIconTab} === 'PACKAGES'}">
+										<Label text="Gross Weight (g)" design="Bold"/>
+										<table:template>
+											<Text text="{jsonModel>U_GrossWeight}" wrapping="true"/>
 										</table:template>
 									</table:Column>
 									<table:Column sortProperty="CreateDate" filterProperty="CreateDate">
