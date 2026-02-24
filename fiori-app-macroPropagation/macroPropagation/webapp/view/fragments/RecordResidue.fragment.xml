@@ -30,7 +30,7 @@
 				</InputListItem>
 				<InputListItem label="{i18n>Reason}">
 					<Select id="reason" width="17rem" items="{path: 'jsonModel>/WasteReasonsList'}" forceSelection="false">
-						<core:Item key="{jsonModel>Name}" text="{jsonModel>Name}"/>
+						<core:Item key="{jsonModel>Code}" text="{jsonModel>Name}"/>
 					</Select>
 					<!--<SearchField width="17rem" id="reason" search="onSearchLicense" enableSuggestions="true" suggestionItems="{jsonModel>/WasteReasonsList}"-->
 					<!--	suggest="onSuggestLocation" value="{jsonModel>/selectedReason}">-->

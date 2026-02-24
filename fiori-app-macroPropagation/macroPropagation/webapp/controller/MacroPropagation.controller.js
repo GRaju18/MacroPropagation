@@ -778,9 +778,16 @@ sap.ui.define([
 		},
 		onLoadWasteReasonMethod: function () {
 			var jsonModel = this.getOwnerComponent().getModel("jsonModel");
-			this.readServiecLayer("/b1s/v2/U_NWREA", function (e) {
+			var filters1 = "?$filter=U_Button eq 'Residue'";
+			this.readServiecLayer("/b1s/v2/U_NWREA" + filters1, function (e) {
 				jsonModel.setProperty("/WasteReasonsList", e.value);
 			});
+
+			var filters2 = "?$filter=U_Button eq 'Destroy'";
+			this.readServiecLayer("/b1s/v2/U_NWREA" + filters2, function (e) {
+				jsonModel.setProperty("/DestroyReasonsList", e.value);
+			});
+
 			var rSelect = "?$select=U_NWTLB";
 			this.readServiecLayer("/b1s/v2/NWTHS" + rSelect, function (data) {
 				jsonModel.setProperty("/allLableData", data.value);

@@ -22,8 +22,8 @@
 					<Input id="grossWt" width="12rem" required="true" type="Number" editable="false" value="{jsonModel>U_GrossWeight}"/>
 				</InputListItem>
 				<InputListItem label="Reason">
-					<Select id="reason" width="12rem" selectedKey="{jsonModel>U_NWTRS}" items="{path: 'jsonModel>/WasteReasonsList'}" forceSelection="false">
-						<core:Item key="{jsonModel>Name}" text="{jsonModel>Name}"/>
+					<Select id="reason" width="12rem" selectedKey="{jsonModel>U_NWTRS}" items="{path: 'jsonModel>/DestroyReasonsList'}" forceSelection="false">
+						<core:Item key="{jsonModel>Code}" text="{jsonModel>Name}"/>
 					</Select>
 				</InputListItem>
 				<InputListItem label="Notes">
