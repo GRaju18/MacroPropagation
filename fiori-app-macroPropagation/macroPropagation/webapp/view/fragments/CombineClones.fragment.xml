@@ -15,6 +15,9 @@
 				<InputListItem label="Strain name">
 					<Input id="strain" editable="false" width="15rem" value="{jsonModel>/bulkHarvestObj/U_NSTNM}"/>
 				</InputListItem>
+				<InputListItem label="No. of Plants">
+					<Input id="plantNo" editable="false" width="15rem"/>
+				</InputListItem>
 				<InputListItem label="Package ID">
 					<Input id="packageID" width="15rem" value="{jsonModel>/bulkHarvestObj/packageID}" change="bulkHarvestNameChange"/>
 				</InputListItem>

@@ -126,6 +126,12 @@
 											<Text text="{jsonModel>WhsCode} - {jsonModel>WhsName}" wrapping="true"/>
 										</table:template>
 									</table:Column>
+									<table:Column sortProperty="Quantity" filterProperty="Quantity" visible="{= ${jsonModel>/sIconTab} === 'PACKAGES'}">
+										<Label text="No. of Plants" design="Bold"/>
+										<table:template>
+											<Link text="{jsonModel>Quantity}" press="openPlantsView"/>
+										</table:template>
+									</table:Column>
 									<table:Column sortProperty="U_NetWeight" filterProperty="U_NetWeight" visible="{= ${jsonModel>/sIconTab} === 'PACKAGES'}">
 										<Label text="Net Weight (g)" design="Bold"/>
 										<table:template>

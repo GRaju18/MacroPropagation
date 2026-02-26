@@ -141,6 +141,41 @@ sap.ui.define([
 			this.flowQuickView.close();
 		},
 
+		openPlantsView: function (oEvent, oModel) {
+			var oButton = oEvent.getSource();
+			var oModel = this.getView().getModel("jsonModel");
+			var sPath = oEvent.getSource().getBindingContext("jsonModel").getPath();
+			var sObject = oEvent.getSource().getBindingContext("jsonModel").getObject();
+			var originalString = sObject.U_PackagedPlants;
+			var specialChar = ",";
+			if (originalString != null) {
+				sObject.plantIDs = originalString.split(specialChar).join('\n');
+			}
+			if (!this.plantQuickView) {
+				Fragment.load({
+					id: "plantQuickView",
+					name: "com.9b.MacroPropagation.view.fragments.PlantQuickInfo",
+					controller: this
+				}).then(function (oQuickView) {
+					this.plantQuickView = oQuickView;
+					this._configQuickViewPlant(oModel, sPath);
+					this.plantQuickView.openBy(oButton);
+				}.bind(this));
+			} else {
+				this._configQuickViewPlant(oModel, sPath);
+				this.plantQuickView.openBy(oButton);
+			}
+		},
+		_configQuickViewPlant: function (oModel, sPath) {
+			this.getView().addDependent(this.plantQuickView);
+			this.plantQuickView.close();
+			this.plantQuickView.bindElement(sPath);
+			this.plantQuickView.setModel(oModel);
+		},
+		handlePlantClose: function () {
+			this.plantQuickView.close();
+		},
+
 		/***method for move clones***/
 		moveClones: function () {
 			var jsonModel = this.getOwnerComponent().getModel("jsonModel");
@@ -626,6 +661,7 @@ sap.ui.define([
 					this.getView().addDependent(this.bulkHarvestDialog);
 				}
 				this.clearBulkHarvestData(sObj);
+				sap.ui.core.Fragment.byId("harvestB", "plantNo").setValue(sItems.length);
 				this.loadAllPackageData(sObj);
 				this.bulkHarvestDialog.open();
 			} else {
@@ -698,6 +734,7 @@ sap.ui.define([
 			var dateFormat = DateFormat.getDateInstance({
 				pattern: "yyyy-MM-dd"
 			});
+			var plantCount = sap.ui.core.Fragment.byId("harvestB", "plantNo").getValue();
 			var createdDate = dateFormat.format(createDate);
 			var bulkHarvestObj = jsonModel.getProperty("/bulkHarvestObj");
 			var ItemCode = bulkHarvestObj.ItemCode;
@@ -709,6 +746,14 @@ sap.ui.define([
 			var locationID = bulkHarvestObj.locationID;
 			var U_BatAttr3 = bulkHarvestObj.U_BatAttr3;
 
+			var macroPropagationTable = this.getView().byId("macroPropagationTable");
+			var sItems = macroPropagationTable.getSelectedIndices();
+			var plantIDs = "";
+			$.each(sItems, function (i, e) {
+				var sObj = macroPropagationTable.getContextByIndex(e).getObject();
+				//plantIDArray.push(sObj.BatchNum);
+				plantIDs += sObj.BatchNum + ",";
+			});
 			if (packageID === "") {
 				sap.m.MessageToast.show("Please enter Harvest Name");
 				return;
@@ -724,17 +769,6 @@ sap.ui.define([
 			var batchUrl = [];
 			jsonModel.setProperty("/errorTxt", []);
 
-			// var sPlants = jsonModel.getProperty("/scannedBatchPlants");
-			// var harvestCout = Number(sPlants.U_HarvestBatch);
-			// var payLoadInventoryEntry = {
-			// 	U_HarvestBatch: harvestCout + 1
-			// };
-			// batchUrl.push({
-			// 	url: "/b1s/v2/BatchNumberDetails(" + sPlants.AbsEntry + ")",
-			// 	data: payLoadInventoryEntry,
-			// 	method: "PATCH"
-			// });
-
 			//entry to package tab
 			var payLoadInventory = {
 				"BPL_IDAssignedToInvoice": jsonModel.getProperty("/sLinObj").U_NBRCD,
@@ -745,15 +779,16 @@ sap.ui.define([
 			payLoadInventory.DocumentLines.push({
 				"ItemCode": ItemCode,
 				"WarehouseCode": locationID,
-				"Quantity": netWeight,
+				"Quantity": plantCount,
 				"BatchNumbers": [{
 					"BatchNumber": packageID,
-					"Quantity": netWeight,
+					"Quantity": plantCount,
 					"Location": locationID,
 					"U_Phase": "Macro_Pack",
 					"U_NetWeight": netWeight,
 					"U_GrossWeight": grossWeight,
 					"U_BagWeight": bagWeight,
+					"U_PackagedPlants": plantIDs,
 					"ManufacturerSerialNumber": batchID, //source UID
 					"U_BatAttr3": U_BatAttr3 + ":" + batchID, //all sources
 					"InternalSerialNumber": batchID //harvest name
@@ -764,6 +799,70 @@ sap.ui.define([
 				data: payLoadInventory,
 				method: "POST"
 			});
+
+			//inventory exit to selected plant
+			var invTraDesData = [];
+			$.each(sItems, function (i, e) {
+				var sObj = macroPropagationTable.getContextByIndex(e).getObject();
+				if (invTraDesData.length > 0) {
+					if (sObj.ItemCode === invTraDesData[invTraDesData.length - 1].DocumentLines[0].ItemCode) {
+						invTraDesData[invTraDesData.length - 1].DocumentLines.push({
+							"LineNum": invTraDesData[invTraDesData.length - 1].DocumentLines[invTraDesData[invTraDesData.length - 1].DocumentLines.length -
+								1].LineNum + 1,
+							"ItemCode": sObj.ItemCode,
+							"Quantity": 1,
+							"WarehouseCode": sObj.WhsCode,
+							"BatchNumbers": []
+						});
+						invTraDesData[invTraDesData.length - 1].DocumentLines[invTraDesData[invTraDesData.length - 1].DocumentLines.length - 1].BatchNumbers
+							.push({
+								"BatchNumber": sObj.BatchNum,
+								"Quantity": 1,
+								"Location": sObj.WhsCode
+							});
+					} else {
+						payLoadInventory = {
+							"BPL_IDAssignedToInvoice": jsonModel.getProperty("/sLinObj").U_NBRCD,
+							"DocumentLines": [{
+								"LineNum": 0,
+								"ItemCode": sObj.ItemCode,
+								"WarehouseCode": sObj.WhsCode,
+								"Quantity": 1,
+								"BatchNumbers": [{
+									"BatchNumber": sObj.BatchNum,
+									"Quantity": 1,
+									"Location": sObj.WhsCode
+								}]
+							}]
+						};
+						invTraDesData.push(payLoadInventory);
+					}
+				} else {
+					payLoadInventory = {
+						"BPL_IDAssignedToInvoice": jsonModel.getProperty("/sLinObj").U_NBRCD,
+						"DocumentLines": [{
+							"LineNum": 0,
+							"ItemCode": sObj.ItemCode,
+							"WarehouseCode": sObj.WhsCode,
+							"Quantity": 1,
+							"BatchNumbers": [{
+								"BatchNumber": sObj.BatchNum,
+								"Quantity": 1,
+								"Location": sObj.WhsCode
+							}]
+						}]
+					};
+					invTraDesData.push(payLoadInventory);
+				}
+			});
+			$.grep(invTraDesData, function (invTransObj) {
+				batchUrl.push({
+					url: "/b1s/v2/InventoryGenExits",
+					data: invTransObj,
+					method: "POST"
+				});
+			});
+
 			//return;
 			jsonModel.setProperty("/busyView", true);
 			that.createBatchCall(batchUrl, function () {
