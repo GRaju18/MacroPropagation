@@ -126,7 +126,6 @@ sap.ui.define([
 				this.callBatchService(batchUrl, callBack, busyDialog);
 			}
 		},
-
 		callBatchService: function (batchUrl, callBack, busyDialog) {
 			var reqHeader = "--clone_batch--\r\nContent-Type: application/http \r\nContent-Transfer-Encoding:binary\r\n\r\n";
 			var payLoad = reqHeader;
@@ -212,6 +211,344 @@ sap.ui.define([
 			$.ajax(settings).done(function () {
 				//	console.log(response);
 			});
+		},
+		
+		createBatchCallNEW: function (batchUrl, callBack, busyDialog) {
+			var jsonModel = this.getView().getModel("jsonModel");
+			var batchSize = 100;
+			var batches = [];
+			var allResults = [];
+			var allErrors = [];
+
+			for (var i = 0; i < batchUrl.length; i += batchSize) {
+				batches.push(batchUrl.slice(i, i + batchSize));
+			}
+
+			var pending = batches.length;
+			var that = this;
+
+			if (busyDialog) {
+				busyDialog.setBusy(true);
+			}
+
+			batches.forEach(function (batch) {
+				that.callBatchServiceNEW(batch, function (data, errors) {
+					if (data && data.length) {
+						allResults = allResults.concat(data);
+					}
+					if (errors && errors.length) {
+						allErrors = allErrors.concat(errors);
+					}
+					pending--;
+					if (pending === 0) {
+						if (busyDialog) {
+							busyDialog.setBusy(false);
+						}
+						callBack.call(that, {
+							data: allResults,
+							errors: allErrors
+						});
+					}
+				});
+			});
+		},
+		callBatchServiceNEW: function (batchUrl, callback) {
+			var jsonModel = this.getOwnerComponent().getModel("jsonModel");
+			var baseUrl = jsonModel.getProperty("/serLayerbaseUrl");
+			var that = this;
+
+			if (location.host.indexOf("webide") === -1) {
+				baseUrl = "";
+			}
+
+			var boundary = "clone_batch";
+			var payload = "";
+
+			batchUrl.forEach(function (req, i) {
+				payload += "--" + boundary + "\r\n";
+				payload += "Content-Type: application/http\r\n";
+				payload += "Content-Transfer-Encoding:binary\r\n\r\n";
+
+				payload += req.method + " " + req.url + " HTTP/1.1\r\n";
+				payload += "Content-Type: application/json\r\n\r\n";
+
+				if (req.data) {
+					payload += JSON.stringify(req.data) + "\r\n\r\n";
+				} else {
+					payload += "\r\n";
+				}
+
+			});
+
+			payload += "--" + boundary + "--";
+
+			$.ajax({
+				url: baseUrl + "/b1s/v2/$batch",
+				method: "POST",
+				xhrFields: {
+					withCredentials: true
+				},
+				headers: {
+					"Content-Type": "multipart/mixed; boundary=" + boundary
+				},
+				data: payload,
+
+				success: function (res) {
+
+					var results = [];
+					var errors = [];
+
+					try {
+
+						res.split("\r\n").forEach(function (line) {
+							if (line.indexOf("@odata.context") !== -1) {
+								var obj = JSON.parse(line);
+								if (obj) {
+									results = results.concat(obj);
+								}
+
+							}
+							if (line.indexOf('"error"') !== -1) {
+								var err = JSON.parse(line);
+								errors.push(err.error.message);
+							}
+						});
+
+					} catch (e) {
+						console.error("Batch parse error", e);
+					}
+
+					var errorResponse = res.includes("error");
+
+					if (errorResponse == true) {
+						jsonModel.setProperty("/errorResponse", true);
+					} else {
+						jsonModel.setProperty("/errorResponse", false);
+					}
+
+					var logData;
+					if (errors && errors.length > 0) {
+						logData = {
+							Api: "Batch calls",
+							methodType: "POST",
+							Desttype: "SL",
+							errorText: JSON.stringify(errors),
+							data: payload,
+							statusTxt: 400
+						};
+					} else {
+						logData = {
+							Api: "Batch calls",
+							methodType: "POST",
+							Desttype: "SL",
+							errorText: "",
+							data: payload,
+							statusTxt: 200
+						};
+					}
+
+					that.CaptureLog(logData);
+
+					callback(results, errors);
+
+				},
+
+				error: function (err) {
+
+					var errors = [];
+
+					if (err.responseJSON) {
+						errors.push(err.responseJSON.error.message.value);
+					} else {
+						errors.push(err.statusText);
+					}
+
+					callback([], errors);
+
+				}
+
+			});
+
+		},
+		CaptureLog: function (LogData) {
+			this.createSLLog(LogData.Api, LogData.methodType, LogData.data, LogData.errorText, LogData.statusTxt);
+		},
+		createSLLog: function (sUrl, method, reqPayload, resPayload, statusCode) {
+			var jsonModel = this.getOwnerComponent().getModel("jsonModel");
+			var payLoad = {
+				U_NDTTM: this.convertUTCDate(new Date()),
+				U_NUSID: jsonModel.getProperty("/userName"),
+				U_NLGMT: method,
+				U_NLURL: sUrl,
+				U_NLGBD: JSON.stringify(reqPayload),
+				U_NLGRP: JSON.stringify(resPayload),
+				U_NLGST: statusCode,
+				U_NAPP: "Macropropagation"
+			};
+			var that = this;
+			var jsonModel = this.getOwnerComponent().getModel("jsonModel");
+			payLoad = JSON.stringify(payLoad);
+			var sUrl, entity = "/b1s/v2/NBNLG";
+			if (location.host.indexOf("webide") !== -1) {
+				sUrl = jsonModel.getProperty("/serLayerbaseUrl") + entity;
+			} else {
+				sUrl = entity;
+			}
+			$.ajax({
+				type: "POST",
+				xhrFields: {
+					withCredentials: true
+				},
+				url: sUrl,
+				//	setCookies: "B1SESSION=" + sessionID,
+				dataType: "json",
+				data: payLoad,
+				success: function (res) {},
+				error: function (error) {}
+			});
+		},
+		handleCreateTraceability: function (serviceData, seq, phase) {
+			var that = this;
+			var batchUrl = [];
+			var jsonModel = this.getView().getModel("jsonModel");
+			serviceData.forEach(function (sObj) {
+				if (sObj["@odata.context"] && sObj["@odata.context"].includes("InventoryGenEntries")) {
+					sObj.DocumentLines.forEach(function (lineObj) {
+						if (lineObj.BatchNumbers && lineObj.BatchNumbers.length) {
+							lineObj.BatchNumbers.forEach(function (batchObj) {
+								batchUrl.push({
+									url: "/b1s/v2/TRACE",
+									method: "POST",
+									data: that.prepareCreateTracebilityPayload(batchObj, seq, phase, lineObj.ItemDescription)
+								});
+							});
+						}
+					});
+				}
+			});
+			jsonModel.setProperty("/errorTxt", []);
+			if (batchUrl.length) {
+				that.createBatchCall(batchUrl, function () {
+					console.log("Traceability batch completed");
+				});
+			}
+		},
+		prepareCreateTracebilityPayload: function (sObj, seq, phase, itemDesc) {
+			if (!sObj) {
+				return {};
+			}
+			if (phase == "seedling" || phase == "Package") {
+				var parentBatchId = sObj.ManufacturerSerialNumber;
+				var rootBatchId = sObj.U_SourceBatch;
+			} else {
+				var rootTxt = sObj.U_SourceBatch;
+				var parentId = rootTxt.split(":")[0];
+				var parentBatchId = parentId + " || " + sObj.ManufacturerSerialNumber;
+				var rootBatchId = rootTxt.split(":")[1];
+			}
+			return {
+				U_PlantID: sObj.BatchNumber, //plant id
+				U_BatchId: sObj.InternalSerialNumber, //batch id
+				U_ParentBatchId: parentBatchId,
+				U_RootBatchId: rootBatchId,
+				U_ItemCode: sObj.ItemCode,
+				U_ItemName: itemDesc,
+				U_Phase: sObj.U_Phase,
+				U_PhaseSequence: seq,
+				U_PackageQty: sObj.U_GrossWeight
+			};
+		},
+		
+		getBatchNumbersData: function (batchNumbersData) {
+			var filters = "?$filter=Quantity ne 0  and (";
+			$.each(batchNumbersData, function (i, batchNo) {
+				if (i < batchNumbersData.length - 1) {
+					filters = filters + "BatchNum eq '" + batchNo + "' or ";
+				} else {
+					filters = filters + "BatchNum eq '" + batchNo + "')";
+				}
+			});
+			return filters;
+		},
+		handleTraceability: function (serviceData, seq) {
+			var that = this;
+			var batchUrl = [];
+			var jsonModel = this.getView().getModel("jsonModel");
+			serviceData.forEach(function (sObj) {
+				batchUrl.push({
+					url: "/b1s/v2/TRACE",
+					method: "POST",
+					data: that.prepareTracebilityPayload(sObj, seq)
+				});
+			});
+			jsonModel.setProperty("/errorTxt", []);
+			if (batchUrl.length) {
+				that.createBatchCall(batchUrl, function () {
+					console.log("Traceability batch completed");
+				});
+			}
+		},
+		prepareTracebilityPayload: function (sObj, seq) {
+			if (!sObj) {
+				return {};
+			}
+			var text = sObj.U_SourceBatch;
+			var rootBatchId = text.split(":")[1];
+			return {
+				U_PlantID: sObj.BatchNum,
+				U_BatchId: sObj.IntrSerial,
+				U_ParentBatchId: sObj.MnfSerial,
+				//U_RootBatchId: sObj.U_SourceBatch,
+				U_RootBatchId: rootBatchId,
+				U_ItemCode: sObj.ItemCode,
+				U_ItemName: sObj.ItemName,
+				U_Phase: sObj.U_Phase,
+				U_PhaseSequence: seq
+			};
+		},
+		handleDestroyTraceability: function (serviceData, seq) {
+			var that = this;
+			var batchUrl = [];
+			var jsonModel = this.getView().getModel("jsonModel");
+			serviceData.forEach(function (sObj) {
+				if (sObj["@odata.context"] && sObj["@odata.context"].includes("InventoryGenExits")) {
+					sObj.DocumentLines.forEach(function (lineObj) {
+						if (lineObj.BatchNumbers && lineObj.BatchNumbers.length) {
+							lineObj.BatchNumbers.forEach(function (batchObj) {
+								batchUrl.push({
+									url: "/b1s/v2/TRACE",
+									method: "POST",
+									data: that.prepareDestroyTracebilityPayload(batchObj, seq, lineObj.ItemDescription)
+								});
+							});
+						}
+					});
+				}
+			});
+			jsonModel.setProperty("/errorTxt", []);
+			if (batchUrl.length) {
+				that.createBatchCall(batchUrl, function () {
+					console.log("Traceability batch completed");
+				});
+			}
+		},
+		prepareDestroyTracebilityPayload: function (sObj, seq, itemDesc) {
+			if (!sObj) {
+				return {};
+			}
+			var text = sObj.U_SourceBatch;
+			var rootBatchId = text.split(":")[1];
+			return {
+				U_PlantID: sObj.BatchNumber,
+				U_BatchId: sObj.InternalSerialNumber, //batch Id
+				U_ParentBatchId: sObj.ManufacturerSerialNumber, //source batch id
+				//U_RootBatchId: sObj.U_SourceBatch, //root batch Id
+				U_RootBatchId: rootBatchId,
+				U_ItemCode: sObj.ItemCode,
+				U_ItemName: itemDesc,
+				U_Phase: "Destroyed",
+				U_PhaseSequence: seq
+			};
 		},
 
 		/**

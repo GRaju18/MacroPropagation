@@ -176,7 +176,7 @@ sap.ui.define([
 			this.plantQuickView.close();
 		},
 
-		/***method for move clones***/
+		//method for move clones
 		moveClones: function () {
 			var jsonModel = this.getOwnerComponent().getModel("jsonModel");
 			var selTab = this.byId("phenoTab").getSelectedKey();
@@ -273,9 +273,11 @@ sap.ui.define([
 			var batchID = updateObject.IntrSerial;
 			var allBatchID = jsonModel.getProperty("/macroPropagationTableData");
 			var batchIDArr = [];
+			var PlantIDsArr = [];
 			$.each(allBatchID, function (i, e) {
 				if (e.IntrSerial === batchID) {
 					batchIDArr.push(e);
+					PlantIDsArr.push(e.BatchNum);
 				}
 			});
 			if (Phase !== "Macro_Clone") {
@@ -315,6 +317,7 @@ sap.ui.define([
 										"ManufacturerSerialNumber": sObj.MnfSerial,
 										"InternalSerialNumber": sObj.IntrSerial,
 										"U_BatAttr3": sObj.U_BatAttr3 + ":" + sObj.IntrSerial, //all sources
+										"U_SourceBatch": sObj.U_SourceBatch,
 									});
 							} else {
 								payLoadInventory = {
@@ -334,6 +337,7 @@ sap.ui.define([
 											"ManufacturerSerialNumber": sObj.MnfSerial,
 											"InternalSerialNumber": sObj.IntrSerial,
 											"U_BatAttr3": sObj.U_BatAttr3 + ":" + sObj.IntrSerial, //all sources
+											"U_SourceBatch": sObj.U_SourceBatch,
 										}]
 									}]
 								};
@@ -357,6 +361,7 @@ sap.ui.define([
 										"ManufacturerSerialNumber": sObj.MnfSerial,
 										"InternalSerialNumber": sObj.IntrSerial,
 										"U_BatAttr3": sObj.U_BatAttr3 + ":" + sObj.IntrSerial, //all sources
+										"U_SourceBatch": sObj.U_SourceBatch,
 									}]
 								}]
 							};
@@ -383,10 +388,11 @@ sap.ui.define([
 					});
 
 					var d = new Date();
-					var month = '' + (d.getMonth() + 1);
-					var day = '' + d.getDate();
+					var day = d.getDate().toString().padStart(2, "0");
+					var month = (d.getMonth() + 1).toString().padStart(2, "0");
 					var year = d.getFullYear();
 					var uniqueText = year + "" + month + "" + day;
+
 					var itemName = updateObject.ItemName;
 					var strainCode = itemName.split(":")[0];
 					var cloneData = jsonModel.getProperty("/allData");
@@ -429,6 +435,7 @@ sap.ui.define([
 										"ManufacturerSerialNumber": sObj.IntrSerial,
 										"InternalSerialNumber": batchID,
 										"U_BatAttr3": sObj.MnfSerial + ":" + sObj.IntrSerial, //all sources
+										"U_SourceBatch": sObj.U_SourceBatch,
 									});
 							} else {
 								payLoadInventory = {
@@ -448,6 +455,7 @@ sap.ui.define([
 											"ManufacturerSerialNumber": sObj.IntrSerial,
 											"InternalSerialNumber": batchID,
 											"U_BatAttr3": sObj.MnfSerial + ":" + sObj.IntrSerial, //all sources
+											"U_SourceBatch": sObj.U_SourceBatch,
 										}]
 									}]
 								};
@@ -471,6 +479,7 @@ sap.ui.define([
 										"ManufacturerSerialNumber": sObj.IntrSerial,
 										"InternalSerialNumber": batchID,
 										"U_BatAttr3": sObj.MnfSerial + ":" + sObj.IntrSerial, //all sources
+										"U_SourceBatch": sObj.U_SourceBatch,
 									}]
 								}]
 							};
@@ -485,6 +494,7 @@ sap.ui.define([
 							"BatchAttribute1": unObj.IntrSerial,
 							"BatchAttribute2": batchIDNew,
 							"U_BatAttr3": unObj.U_BatAttr3 + ":" + unObj.IntrSerial, //all sources
+							"U_SourceBatch": unObj.U_SourceBatch,
 						};
 						batchUrl.push({
 							url: "/b1s/v2/BatchNumberDetails(" + unObj.AbsEntry + ")",
@@ -569,6 +579,7 @@ sap.ui.define([
 					sObj = table.getContextByIndex(e).getObject();
 					var payLoadUncheckedUpdate = {
 						"U_Phase": "Macro_Clone",
+						"U_SourceBatch": sObj.U_SourceBatch,
 						//"BatchAttribute1": sObj.IntrSerial,
 						//"U_BatAttr3": sObj.U_BatAttr3 + ":" + sObj.IntrSerial, //all sources
 					};
@@ -582,7 +593,13 @@ sap.ui.define([
 
 			//return;
 			jsonModel.setProperty("/errorTxt", []);
-			this.createBatchCall(batchUrl, function () {
+			this.createBatchCallNEW(batchUrl, function (resData) {
+				
+				var filters = that.getBatchNumbersData(PlantIDsArr);
+				that.readServiecLayer("/b1s/v2/sml.svc/CV_PLANNER_VW" + filters, function (data) {
+					that.handleTraceability(data.value, 13);
+				});
+				
 				var errorTxt = jsonModel.getProperty("/errorTxt");
 				if (errorTxt.length > 0) {
 					sap.m.MessageBox.error(errorTxt.join("\n"));
@@ -948,10 +965,11 @@ sap.ui.define([
 								});
 
 								var d = new Date();
-								var month = '' + (d.getMonth() + 1);
-								var day = '' + d.getDate();
+								var day = d.getDate().toString().padStart(2, "0");
+								var month = (d.getMonth() + 1).toString().padStart(2, "0");
 								var year = d.getFullYear();
 								var uniqueText = year + "" + month + "" + day;
+
 								var itemName = updateObject.ItemName;
 								var strainCode = itemName.split(":")[0];
 								var allData = jsonModel.getProperty("/allData");
@@ -1010,7 +1028,7 @@ sap.ui.define([
 			}
 		},
 
-		/*method for destroy plants*/
+		//method for destroy plants
 		performDestroyPlants: function () {
 			var that = this;
 			var sItems;
@@ -1175,7 +1193,8 @@ sap.ui.define([
 								.push({
 									"BatchNumber": sObj.BatchNum,
 									"Quantity": 1,
-									"Location": sObj.WhsCode
+									"Location": sObj.WhsCode,
+									"U_SourceBatch": sObj.U_SourceBatch,
 								});
 						} else {
 							payLoadInventory = {
@@ -1188,7 +1207,8 @@ sap.ui.define([
 									"BatchNumbers": [{
 										"BatchNumber": sObj.BatchNum,
 										"Quantity": 1,
-										"Location": sObj.WhsCode
+										"Location": sObj.WhsCode,
+										"U_SourceBatch": sObj.U_SourceBatch,
 									}]
 								}]
 							};
@@ -1205,7 +1225,8 @@ sap.ui.define([
 								"BatchNumbers": [{
 									"BatchNumber": sObj.BatchNum,
 									"Quantity": 1,
-									"Location": sObj.WhsCode
+									"Location": sObj.WhsCode,
+									"U_SourceBatch": sObj.U_SourceBatch,
 								}]
 							}]
 						};
@@ -1243,7 +1264,10 @@ sap.ui.define([
 				});
 
 				jsonModel.setProperty("/errorTxt", []);
-				this.createBatchCall(batchUrl, function () {
+				this.createBatchCallNEW(batchUrl, function (resData) {
+
+					that.handleDestroyTraceability(resData.data, 10);
+
 					var errorTxt = jsonModel.getProperty("/errorTxt");
 					if (errorTxt.length > 0) {
 						sap.m.MessageBox.error(errorTxt.join("\n"));
@@ -1260,7 +1284,7 @@ sap.ui.define([
 			}
 		},
 
-		/*method for Record residue start*/
+		//method for Record residue start
 		performRecordResidue: function () {
 			var that = this;
 			var jsonModel = this.getOwnerComponent().getModel("jsonModel");
