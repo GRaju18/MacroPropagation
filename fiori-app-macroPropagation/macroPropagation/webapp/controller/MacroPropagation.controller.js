@@ -594,12 +594,12 @@ sap.ui.define([
 			//return;
 			jsonModel.setProperty("/errorTxt", []);
 			this.createBatchCallNEW(batchUrl, function (resData) {
-				
+
 				var filters = that.getBatchNumbersData(PlantIDsArr);
 				that.readServiecLayer("/b1s/v2/sml.svc/CV_PLANNER_VW" + filters, function (data) {
 					that.handleTraceability(data.value, 13);
 				});
-				
+
 				var errorTxt = jsonModel.getProperty("/errorTxt");
 				if (errorTxt.length > 0) {
 					sap.m.MessageBox.error(errorTxt.join("\n"));
@@ -614,47 +614,6 @@ sap.ui.define([
 			}, this.createCloneDialog);
 		},
 
-		/***method start for sell clones***/
-		sellClones: function () {
-			var that = this;
-			var sItems;
-			var jsonModel = that.getOwnerComponent().getModel("jsonModel");
-			var macroPropagationTable = this.getView().byId("macroPropagationTable");
-			sItems = macroPropagationTable.getSelectedIndices();
-			if (sItems.length > 0) {
-				sap.m.MessageBox.confirm("Are you sure you want to sell these plants ?", {
-					onClose: function (action) {
-						if (action === "OK") {
-							var sObj, batchUrl = [];
-							$.each(sItems, function (i, e) {
-								sObj = macroPropagationTable.getContextByIndex(e).getObject();
-								var payLoadInventoryEntry = {
-									U_Phase: "Sell"
-								};
-								batchUrl.push({
-									url: "/b1s/v2/BatchNumberDetails(" + sObj.AbsEntry + ")",
-									data: payLoadInventoryEntry,
-									method: "PATCH"
-								});
-							});
-							jsonModel.setProperty("/errorTxt", []);
-							that.createBatchCall(batchUrl, function () {
-								var errorTxt = jsonModel.getProperty("/errorTxt");
-								if (errorTxt.length > 0) {
-									sap.m.MessageBox.error(errorTxt.join("\n"));
-								} else {
-									sap.m.MessageToast.show("Selected plants are sold");
-								}
-								that.loadMasterData();
-								macroPropagationTable.setSelectedIndex(-1);
-							});
-						}
-					}
-				});
-			} else {
-				sap.m.MessageToast.show("Please select atleast one plant");
-			}
-		},
 		//method for combine clones
 		combineClones: function () {
 			var jsonModel = this.getOwnerComponent().getModel("jsonModel");
@@ -691,6 +650,7 @@ sap.ui.define([
 			sap.ui.core.Fragment.byId("harvestB", "mDate").setDateValue(new Date());
 			var bulkHarvestObj = {
 				ItemCode: sObj.ItemCode,
+				ItemName: sObj.ItemName,
 				IntrSerial: sObj.IntrSerial,
 				packageID: "",
 				U_NSTNM: sObj.U_NSTNM,
@@ -699,6 +659,7 @@ sap.ui.define([
 				grossWeight: "",
 				locationID: sObj.WhsCode,
 				U_BatAttr3: sObj.U_BatAttr3,
+				U_SourceBatch: sObj.U_SourceBatch,
 			};
 			jsonModel.setProperty("/bulkHarvestObj", bulkHarvestObj);
 			jsonModel.setProperty("/scannedBatchPlants", sObj);
@@ -728,7 +689,7 @@ sap.ui.define([
 			var packageID = that.generateClonePackageBatchID(uniqueText, strainCode, packageData);
 			jsonModel.setProperty("/bulkHarvestObj/packageID", packageID);
 		},
-		onCalculateGrossHarvest: function () {
+		onCalculateGrossCombine: function () {
 			var jsonModel = this.getOwnerComponent().getModel("jsonModel");
 			var WasteNetWeight = sap.ui.core.Fragment.byId("harvestB", "newWt").getValue();
 			var BagWeight = sap.ui.core.Fragment.byId("harvestB", "bagWt").getValue("");
@@ -738,10 +699,10 @@ sap.ui.define([
 				//sap.ui.core.Fragment.byId("harvestB", "grossWt").setValue(GrossWeight);
 			}
 		},
-		onHarvestClose: function () {
+		onCombineClose: function () {
 			this.bulkHarvestDialog.close();
 		},
-		postBulkHarvestData: function () {
+		postCombineClone: function () {
 			var that = this;
 			var itemArray = [],
 				ItemCode;
@@ -755,6 +716,7 @@ sap.ui.define([
 			var createdDate = dateFormat.format(createDate);
 			var bulkHarvestObj = jsonModel.getProperty("/bulkHarvestObj");
 			var ItemCode = bulkHarvestObj.ItemCode;
+			var ItemName = bulkHarvestObj.ItemName;
 			var batchID = bulkHarvestObj.IntrSerial;
 			var packageID = bulkHarvestObj.packageID;
 			var netWeight = bulkHarvestObj.netWeight;
@@ -762,6 +724,7 @@ sap.ui.define([
 			var grossWeight = bulkHarvestObj.grossWeight;
 			var locationID = bulkHarvestObj.locationID;
 			var U_BatAttr3 = bulkHarvestObj.U_BatAttr3;
+			var U_SourceBatch = bulkHarvestObj.U_SourceBatch;
 
 			var macroPropagationTable = this.getView().byId("macroPropagationTable");
 			var sItems = macroPropagationTable.getSelectedIndices();
@@ -808,7 +771,8 @@ sap.ui.define([
 					"U_PackagedPlants": plantIDs,
 					"ManufacturerSerialNumber": batchID, //source UID
 					"U_BatAttr3": U_BatAttr3 + ":" + batchID, //all sources
-					"InternalSerialNumber": batchID //harvest name
+					"InternalSerialNumber": batchID, //harvest name
+					"U_SourceBatch": U_SourceBatch,
 				}],
 			});
 			batchUrl.push({
@@ -835,7 +799,8 @@ sap.ui.define([
 							.push({
 								"BatchNumber": sObj.BatchNum,
 								"Quantity": 1,
-								"Location": sObj.WhsCode
+								"Location": sObj.WhsCode,
+								"U_SourceBatch": sObj.U_SourceBatch,
 							});
 					} else {
 						payLoadInventory = {
@@ -848,7 +813,8 @@ sap.ui.define([
 								"BatchNumbers": [{
 									"BatchNumber": sObj.BatchNum,
 									"Quantity": 1,
-									"Location": sObj.WhsCode
+									"Location": sObj.WhsCode,
+									"U_SourceBatch": sObj.U_SourceBatch,
 								}]
 							}]
 						};
@@ -865,7 +831,8 @@ sap.ui.define([
 							"BatchNumbers": [{
 								"BatchNumber": sObj.BatchNum,
 								"Quantity": 1,
-								"Location": sObj.WhsCode
+								"Location": sObj.WhsCode,
+								"U_SourceBatch": sObj.U_SourceBatch,
 							}]
 						}]
 					};
@@ -879,10 +846,27 @@ sap.ui.define([
 					method: "POST"
 				});
 			});
+			var payLoadHarvest = {
+				U_PlantID: packageID,
+				U_BatchId: batchID, //batch Id
+				U_ParentBatchId: plantIDs, //source batch id
+				U_RootBatchId: U_SourceBatch.split(":")[1], //root batch Id
+				U_ItemCode: ItemCode,
+				U_ItemName: ItemName,
+				U_Phase: "Macro_Pack",
+				U_PhaseSequence: '14',
+				U_PackageQty: grossWeight
+			};
 
 			//return;
 			jsonModel.setProperty("/busyView", true);
-			that.createBatchCall(batchUrl, function () {
+			that.createBatchCallNEW(batchUrl, function (resData) {
+
+				//entry for selected plant 
+				that.updateServiecLayer("/b1s/v2/TRACE", function () {}, payLoadHarvest, "POST", this.bulkHarvestDialog);
+				//exit  from plant for created package
+				that.handleDestroyTraceability(resData.data, 14, "combineClone");
+
 				var errorTxt = jsonModel.getProperty("/errorTxt");
 				if (errorTxt.length > 0) {
 					sap.m.MessageBox.error(errorTxt.join("\n"));
@@ -897,7 +881,7 @@ sap.ui.define([
 		},
 
 		//method for send to receiption
-		sendToReception: function () {
+		sendToCloneCultivation: function () {
 			var that = this;
 			that.loadAllData();
 			var jsonModel = that.getOwnerComponent().getModel("jsonModel");
@@ -910,9 +894,11 @@ sap.ui.define([
 			var batchID = updateObject.IntrSerial;
 			var allBatchID = jsonModel.getProperty("/macroPropagationTableData");
 			var batchIDArr = [];
+			var PlantIDsArr = [];
 			$.each(allBatchID, function (i, e) {
 				if (e.IntrSerial === batchID) {
 					batchIDArr.push(e);
+					PlantIDsArr.push(e.BatchNum);
 				}
 			});
 
@@ -986,6 +972,8 @@ sap.ui.define([
 										BatchAttribute1: sObj.IntrSerial, //source
 										BatchAttribute2: batchID, //batch ID
 										U_BatAttr3: sObj.U_BatAttr3 + ":" + sObj.IntrSerial, //all source
+										U_SourceBatch: sObj.U_SourceBatch,
+
 									};
 									batchUrl.push({
 										url: "/b1s/v2/BatchNumberDetails(" + sObj.AbsEntry + ")",
@@ -1000,6 +988,8 @@ sap.ui.define([
 										BatchAttribute1: sObj1.IntrSerial, //source
 										BatchAttribute2: batchIDNew, //batch ID
 										U_BatAttr3: sObj1.U_BatAttr3 + ":" + sObj1.IntrSerial, //all source
+										U_SourceBatch: sObj.U_SourceBatch,
+
 									};
 									batchUrl.push({
 										url: "/b1s/v2/BatchNumberDetails(" + sObj1.AbsEntry + ")",
@@ -1010,12 +1000,60 @@ sap.ui.define([
 							}
 
 							jsonModel.setProperty("/errorTxt", []);
-							that.createBatchCall(batchUrl, function () {
+							that.createBatchCallNEW(batchUrl, function (resData) {
+
+								var filters = that.getBatchNumbersData(PlantIDsArr);
+								that.readServiecLayer("/b1s/v2/sml.svc/CV_PLANNER_VW" + filters, function (data) {
+									that.handleTraceability(data.value, 11);
+								});
+
 								var errorTxt = jsonModel.getProperty("/errorTxt");
 								if (errorTxt.length > 0) {
 									sap.m.MessageBox.error(errorTxt.join("\n"));
 								} else {
 									sap.m.MessageToast.show("Selected plants are moved for Reception");
+								}
+								that.loadMasterData();
+								macroPropagationTable.setSelectedIndex(-1);
+							});
+						}
+					}
+				});
+			} else {
+				sap.m.MessageToast.show("Please select atleast one plant");
+			}
+		},
+
+		//method start for sell clones
+		sellClones: function () {
+			var that = this;
+			var sItems;
+			var jsonModel = that.getOwnerComponent().getModel("jsonModel");
+			var macroPropagationTable = this.getView().byId("macroPropagationTable");
+			sItems = macroPropagationTable.getSelectedIndices();
+			if (sItems.length > 0) {
+				sap.m.MessageBox.confirm("Are you sure you want to sell these plants ?", {
+					onClose: function (action) {
+						if (action === "OK") {
+							var sObj, batchUrl = [];
+							$.each(sItems, function (i, e) {
+								sObj = macroPropagationTable.getContextByIndex(e).getObject();
+								var payLoadInventoryEntry = {
+									U_Phase: "Sell"
+								};
+								batchUrl.push({
+									url: "/b1s/v2/BatchNumberDetails(" + sObj.AbsEntry + ")",
+									data: payLoadInventoryEntry,
+									method: "PATCH"
+								});
+							});
+							jsonModel.setProperty("/errorTxt", []);
+							that.createBatchCall(batchUrl, function () {
+								var errorTxt = jsonModel.getProperty("/errorTxt");
+								if (errorTxt.length > 0) {
+									sap.m.MessageBox.error(errorTxt.join("\n"));
+								} else {
+									sap.m.MessageToast.show("Selected plants are sold");
 								}
 								that.loadMasterData();
 								macroPropagationTable.setSelectedIndex(-1);
@@ -1266,7 +1304,7 @@ sap.ui.define([
 				jsonModel.setProperty("/errorTxt", []);
 				this.createBatchCallNEW(batchUrl, function (resData) {
 
-					that.handleDestroyTraceability(resData.data, 10);
+					that.handleDestroyTraceability(resData.data, 10, "destroy");
 
 					var errorTxt = jsonModel.getProperty("/errorTxt");
 					if (errorTxt.length > 0) {

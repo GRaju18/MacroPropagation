@@ -212,7 +212,7 @@ sap.ui.define([
 				//	console.log(response);
 			});
 		},
-		
+
 		createBatchCallNEW: function (batchUrl, callBack, busyDialog) {
 			var jsonModel = this.getView().getModel("jsonModel");
 			var batchSize = 100;
@@ -458,7 +458,7 @@ sap.ui.define([
 				U_PackageQty: sObj.U_GrossWeight
 			};
 		},
-		
+
 		getBatchNumbersData: function (batchNumbersData) {
 			var filters = "?$filter=Quantity ne 0  and (";
 			$.each(batchNumbersData, function (i, batchNo) {
@@ -506,7 +506,7 @@ sap.ui.define([
 				U_PhaseSequence: seq
 			};
 		},
-		handleDestroyTraceability: function (serviceData, seq) {
+		handleDestroyTraceability: function (serviceData, seq, postphase) {
 			var that = this;
 			var batchUrl = [];
 			var jsonModel = this.getView().getModel("jsonModel");
@@ -518,7 +518,7 @@ sap.ui.define([
 								batchUrl.push({
 									url: "/b1s/v2/TRACE",
 									method: "POST",
-									data: that.prepareDestroyTracebilityPayload(batchObj, seq, lineObj.ItemDescription)
+									data: that.prepareDestroyTracebilityPayload(batchObj, seq, postphase, lineObj.ItemDescription)
 								});
 							});
 						}
@@ -532,12 +532,17 @@ sap.ui.define([
 				});
 			}
 		},
-		prepareDestroyTracebilityPayload: function (sObj, seq, itemDesc) {
+		prepareDestroyTracebilityPayload: function (sObj, seq, postphase, itemDesc) {
 			if (!sObj) {
 				return {};
 			}
 			var text = sObj.U_SourceBatch;
 			var rootBatchId = text.split(":")[1];
+			if (postphase == "destroy") {
+				var U_Phase = "Destroyed";
+			} else {
+				var U_Phase = "Clone Combined";
+			}
 			return {
 				U_PlantID: sObj.BatchNumber,
 				U_BatchId: sObj.InternalSerialNumber, //batch Id
@@ -546,7 +551,7 @@ sap.ui.define([
 				U_RootBatchId: rootBatchId,
 				U_ItemCode: sObj.ItemCode,
 				U_ItemName: itemDesc,
-				U_Phase: "Destroyed",
+				U_Phase: U_Phase,
 				U_PhaseSequence: seq
 			};
 		},

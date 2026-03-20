@@ -22,10 +22,10 @@
 					<Input id="packageID" width="15rem" value="{jsonModel>/bulkHarvestObj/packageID}" change="bulkHarvestNameChange"/>
 				</InputListItem>
 				<InputListItem label="Package Weight (g)">
-					<Input id="bagWt" width="15rem" type="Number" value="{jsonModel>/bulkHarvestObj/bagWeight}" change="onCalculateGrossHarvest"/>
+					<Input id="bagWt" width="15rem" type="Number" value="{jsonModel>/bulkHarvestObj/bagWeight}" change="onCalculateGrossCombine"/>
 				</InputListItem>
 				<InputListItem label="Net Weight (g)">
-					<Input id="newWt" width="15rem" type="Number" value="{jsonModel>/bulkHarvestObj/netWeight}" change="onCalculateGrossHarvest"/>
+					<Input id="newWt" width="15rem" type="Number" value="{jsonModel>/bulkHarvestObj/netWeight}" change="onCalculateGrossCombine"/>
 				</InputListItem>
 				<InputListItem label="Gross Weight (g)">
 					<Input id="grossWt" width="15rem" type="Number" editable="false" value="{jsonModel>/bulkHarvestObj/grossWeight}"/>
@@ -36,10 +36,10 @@
 			</FlexBox>
 		</content>
 		<beginButton>
-			<Button id="seachBtn" text="Combine Clones" press="postBulkHarvestData" type="Emphasized"></Button>
+			<Button id="seachBtn" text="Combine Clones" press="postCombineClone" type="Emphasized"></Button>
 		</beginButton>
 		<endButton>
-			<Button text="Close" type="Transparent" press="onHarvestClose" width="5rem"/>
+			<Button text="Close" type="Transparent" press="onCombineClose" width="5rem"/>
 		</endButton>
 	</Dialog>
 </core:FragmentDefinition>
